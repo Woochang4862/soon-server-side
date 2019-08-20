@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const request = require('request');
+const redis = require('redis');
+
+const client = redis.createClient(6379);
+
+client.on('error', (err)=>{
+  console.log("Error "+err);
+});
 
 const _api_key = 'dacdeb969b934abef7e5002b69d6c9ae';
 const _url = 'https://api.themoviedb.org/3';
@@ -16,20 +23,31 @@ Date.prototype.yyyymmdd = function () {
 };
 
 router.get('/genre/all', function (req, res) {
-  var options = {
-    method: 'GET',
-    url: 'https://api.themoviedb.org/3/genre/movie/list',
-    qs: { language: 'ko-KR', api_key: _api_key },
-    body: '{}'
-  };
+  const KEY_GENRE_ALL = req.originalUrl;
+  return client.get(KEY_GENRE_ALL, (err,data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+      return res.json(data)
+    } else {
+      var options = {
+        method: 'GET',
+        url: 'https://api.themoviedb.org/3/genre/movie/list',
+        qs: { language: 'ko-KR', api_key: _api_key },
+        body: '{}'
+      };
 
-  request(options, function (error, response, body) {
-    if (error) throw new Error(error);
-    var result = JSON.parse(body);
-    for (var i = 0; i < result["genres"].length; i++) {
-      result["genres"][i]["icon_path"] = "/images/" + result["genres"][i]["id"] + ".png";
+      request(options, function (error, response, body) {
+        if (error) throw new Error(error);
+        var result = JSON.parse(body);
+        for (var i = 0; i < result["genres"].length; i++) {
+          result["genres"][i]["icon_path"] = "/genre/" + result["genres"][i]["id"] + ".png";
+        }
+        result["source"] = 'api';
+        client.setex(KEY_GENRE_ALL, 3600, JSON.stringify(result));
+        return res.json(result);
+      });
     }
-    res.json(result);
   });
 });
 
@@ -44,52 +62,41 @@ router.get('/movie/company/:id/:page', function (req, res) {
   var id = request_body.id;
   var _page = request_body.page;
 
-  var options = {
-    method: 'GET',
-    url: 'https://api.themoviedb.org/3/discover/movie',
-    qs:
-    {
-      with_companies: id,
-      'primary_release_date.gte': currentDate,
-      page: _page,
-      include_video: 'false',
-      include_adult: 'true',
-      sort_by: 'popularity.desc',
-      language: 'ko-KR',
-      api_key: _api_key
-    },
-    body: '{}'
-  };
+  const KEY_MOVIE_COMPANY_ID_PAGE = req.originalUrl;
 
-  request(options, function (error, response, _body) {
-    if (error) throw new Error(error);
-    var body = JSON.parse(_body);
-    res.json(body);
-    // var resultSize = body["results"].length;
-    // var resultCnt = 0;
-    // if (resultSize === resultCnt)
-    //   res.json(body);
-    // body["results"].forEach((result, index) => {
-    //   var options = {
-    //     method: 'GET',
-    //     url: 'https://api.themoviedb.org/3/movie/' + result["id"],
-    //     qs:
-    //     {
-    //       language: 'ko-KR',
-    //       api_key: _api_key
-    //     },
-    //     body: '{}'
-    //   };
+  return client.get(KEY_MOVIE_COMPANY_ID_PAGE, (err,data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+      return res.json(data);
+    } else {
+      var options = {
+        method: 'GET',
+        url: 'https://api.themoviedb.org/3/discover/movie',
+        qs:
+        {
+          with_companies: id,
+          'primary_release_date.gte': currentDate,
+          page: _page,
+          include_video: 'false',
+          region: 'KR',
+          include_adult: 'true',
+          sort_by: 'popularity.desc',
+          language: 'ko-KR',
+          api_key: _api_key
+        },
+        body: '{}'
+      };
 
-    //   request(options, function (error, response, _body) {
-    //     if (error) throw new Error(error);
-    //     body["results"][index] = JSON.parse(_body);
-    //     resultCnt++;
-    //     if (resultSize === resultCnt)
-    //       res.json(body);
-    //   });
-    // });
-  });
+      request(options, function (error, response, _body) {
+        if (error) throw new Error(error);
+        var body = JSON.parse(_body);
+        body["source"] = 'api';
+        client.setex(KEY_MOVIE_COMPANY_ID_PAGE, 3600, JSON.stringify(body));
+        res.json(body);
+      });
+    }
+  })
 });
 
 router.get('/movie/genre/:id/:page', function (req, res) {
@@ -103,51 +110,40 @@ router.get('/movie/genre/:id/:page', function (req, res) {
   var id = request_body.id;
   var _page = request_body.page;
 
-  var options = {
-    method: 'GET',
-    url: 'https://api.themoviedb.org/3/discover/movie',
-    qs:
-    {
-      with_genres: id,
-      'primary_release_date.gte': currentDate,
-      page: _page,
-      include_video: 'false',
-      include_adult: 'true',
-      sort_by: 'popularity.desc',
-      language: 'ko-KR',
-      api_key: _api_key
-    },
-    body: '{}'
-  };
+  const KEY_MOVIE_GENRE_ID_PAGE = req.originalUrl;
 
-  request(options, function (error, response, _body) {
-    if (error) throw new Error(error);
-    var body = JSON.parse(_body);
-    res.json(body);
-    // var resultSize = body["results"].length;
-    // var resultCnt = 0;
-    // if (resultSize === resultCnt)
-    //   res.json(body);
-    // body["results"].forEach((result, index) => {
-    //   var options = {
-    //     method: 'GET',
-    //     url: 'https://api.themoviedb.org/3/movie/' + result["id"],
-    //     qs:
-    //     {
-    //       language: 'ko-KR',
-    //       api_key: _api_key
-    //     },
-    //     body: '{}'
-    //   };
+  return client.get(KEY_MOVIE_GENRE_ID_PAGE, (err,data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+      return res.json(data);
+    } else {
+      var options = {
+        method: 'GET',
+        url: 'https://api.themoviedb.org/3/discover/movie',
+        qs:
+        {
+          with_genres: id,
+          'primary_release_date.gte': currentDate,
+          page: _page,
+          include_video: 'false',
+          include_adult: 'true',
+          region: 'KR',
+          sort_by: 'popularity.desc',
+          language: 'ko-KR',
+          api_key: _api_key
+        },
+        body: '{}'
+      };
 
-    //   request(options, function (error, response, _body) {
-    //     if (error) throw new Error(error);
-    //     body["results"][index] = JSON.parse(_body);
-    //     resultCnt++;
-    //     if (resultSize === resultCnt)
-    //       res.json(body);
-    //   });
-    // });
+      request(options, function (error, response, _body) {
+        if (error) throw new Error(error);
+        var body = JSON.parse(_body);
+        body["source"] = 'api';
+        client.setex(KEY_MOVIE_GENRE_ID_PAGE, 3600, JSON.stringify(body));
+        return res.json(body);
+      });
+    }
   });
 });
 
@@ -161,106 +157,121 @@ router.get('/movie/date/:date/:page', function (req, res) {
   var _page = request_body.page;
   console.log(date);
 
-  var options = {
-    method: 'GET',
-    url: 'https://api.themoviedb.org/3/discover/movie',
-    qs:
-    {
-      'primary_release_date.gte': date,
-      'primary_release_date.lte': date,
-      page: _page,
-      include_video: 'false',
-      include_adult: 'true',
-      sort_by: 'popularity.desc',
-      language: 'ko-KR',
-      api_key: _api_key
-    },
-    body: '{}'
-  };
+  const KEY_MOVIE_DATE_DATE_PAGE = req.originalUrl;
 
-  request(options, function (error, response, body) {
-    if (error) throw new Error(error);
+  return client.get(KEY_MOVIE_DATE_DATE_PAGE, (err, data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+    } else {
+      var options = {
+        method: 'GET',
+        url: 'https://api.themoviedb.org/3/discover/movie',
+        qs:
+        {
+          'primary_release_date.gte': date,
+          'primary_release_date.lte': date,
+          page: _page,
+          include_video: 'false',
+          include_adult: 'true',
+          sort_by: 'popularity.desc',
+          region: 'KR',
+          language: 'ko-KR',
+          api_key: _api_key
+        },
+        body: '{}'
+      };
 
-    res.json(JSON.parse(body));
+      request(options, function (error, response, body) {
+        if (error) throw new Error(error);
+        var body = JSON.parse(body);
+        body["source"] = 'api';
+        return res.json(body);
+      });
+    }
   });
 });
 
 var searchCompanies = function (req, res, next) {
   var _query = req.params.query;
   var _page = req.params.page;
-  var options = {
-    method: 'GET',
-    url: _url + '/search/company',
-    qs:
-    {
-      include_adult: 'true',
-      page: _page,
-      query: _query,
-      language: 'ko-KR',
-      api_key: _api_key
-    },
-    body: '{}'
-  };
 
-  request(options, function (error, response, body) {
-    if (error) throw new Error(error);
+  const KEY_SEARCH_COMPANY_QUERY_PAGE = req.originalUrl;
 
-    req.companies = JSON.parse(body);
-    next();
+  client.get(KEY_SEARCH_COMPANY_QUERY_PAGE, (err, data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+      req.companies = data;
+      next();
+    } else {
+      var options = {
+        method: 'GET',
+        url: _url + '/search/company',
+        qs:
+        {
+          include_adult: 'true',
+          page: _page,
+          query: _query,
+          language: 'ko-KR',
+          api_key: _api_key
+        },
+        body: '{}'
+      };
+
+      request(options, function (error, response, body) {
+        if (error) throw new Error(error);
+        var body = JSON.parse(body);
+        body["source"] = 'api';
+        client.setex(KEY_SEARCH_COMPANY_QUERY_PAGE, 3600, JSON.stringify(body));
+        req.companies = body;
+        next();
+      });
+    }
   });
 };
 
 var searchMovies = function (req, res, next) {
   var _query = req.params.query;
   var _page = req.params.page;
-  var options = {
-    method: 'GET',
-    url: _url + '/search/movie',
-    qs:
-    {
-      include_adult: 'true',
-      page: _page,
-      query: _query,
-      language: 'ko-KR',
-      api_key: _api_key
-    },
-    body: '{}'
-  };
 
-  request(options, function (error, response, _body) {
-    if (error) throw new Error(error);
+  const KEY_SEARCH_MOVIE_QUERY_PAGE = req.originalUrl;
 
-    var body = JSON.parse(_body);
-    // var resultSize = body["results"].length;
-    // var resultCnt = 0;
-    // if (resultSize === resultCnt) {
-    //   req.movies = body;
-    //   next();
-    // }
-    // body["results"].forEach((result, index) => {
-    //   var options = {
-    //     method: 'GET',
-    //     url: 'https://api.themoviedb.org/3/movie/' + result["id"],
-    //     qs:
-    //     {
-    //       language: 'ko-KR',
-    //       api_key: _api_key
-    //     },
-    //     body: '{}'
-    //   };
+  client.get(KEY_SEARCH_MOVIE_QUERY_PAGE, (err,data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+      req.movies = data;
+      next();
+    } else {
+      var options = {
+        method: 'GET',
+        url: _url + '/search/movie',
+        qs:
+        {
+          include_adult: 'true',
+          page: _page,
+          query: _query,
+          language: 'ko-KR',
+          api_key: _api_key,
+          region: 'KR'
+        },
+        body: '{}'
+      };
 
-    //   request(options, function (error, response, _body) {
-    //     if (error) throw new Error(error);
-    //     body["results"][index] = JSON.parse(_body);
-    //     resultCnt++;
-    //     if (resultSize === resultCnt) {
-    //       req.movies = body;
-    //       next();
-    //     }
-    //   });
-    // });
-    req.movies = body;
-    next();
+      request(options, function (error, response, _body) {
+        if (error) throw new Error(error);
+        try{
+          var body = JSON.parse(_body);
+          body["source"] = 'api';
+          client.setex(KEY_SEARCH_MOVIE_QUERY_PAGE, 3600, JSON.stringify(body));
+          req.movies = body;
+          next();
+        } catch(e){
+          res.redirect("/message/checking/server");
+        }
+      });
+    }
   });
 };
 
@@ -302,6 +313,83 @@ router.get('/search/movie/:query/:page', searchMovies, function (req, res) {
   console.log("request page : " + _page);
   console.log(req.movies);
   res.json(req.movies);
+});
+
+router.get('/movie/detail/:id', (req, res)=>{
+  console.log(req.path);
+
+  var id = req.params.id;
+
+  const KEY_MOVIE_DETAIL_ID = req.originalUrl;
+
+  return client.get(KEY_MOVIE_DETAIL_ID, (err,data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+      return res.json(data);
+    } else {
+      var options = { method: 'GET',
+      url: _url+'/movie/'+id,
+      qs:
+       { append_to_response: 'videos,images',
+         language: 'ko-KR',
+         api_key: 'dacdeb969b934abef7e5002b69d6c9ae',
+       region: 'KR' },
+         body: '{}' };
+
+    request(options, function (error, response, body) {
+      if (error) throw new Error(error);
+      var body = JSON.parse(body);
+      body["source"] = 'api';
+      client.setex(KEY_MOVIE_DETAIL_ID, 3600, JSON.stringify(body));
+      return res.json(body);
+    });
+    }
+  });
+});
+
+router.get('/movie/TMM/:page', function(req, res){
+  console.log(req.path);
+  var now = new Date();
+  var firstDate = new Date(now.getYear()+1900, now.getMonth(), 1).yyyymmdd();
+  var lastDate = new Date(now.getYear()+1900, now.getMonth() + 1, 0).yyyymmdd();
+  console.log(firstDate);
+  console.log(lastDate);
+  var _page = req.params.page;
+
+  const KEY_MOVIE_TMM_PAGE = req.originalUrl;
+
+  return client.get(KEY_MOVIE_TMM_PAGE, (err,data)=>{
+    if(data){
+      var data = JSON.parse(data);
+      data["source"] = 'cache';
+      console.log(data);
+      return res.json(data);
+    } else {
+      var options = { method: 'GET',
+      url: _url+'/discover/movie',
+      qs:
+       { 'primary_release_date.lte': lastDate,
+         'primary_release_date.gte': firstDate,
+         page: _page,
+         include_video: 'false',
+         region : 'KR',
+         include_adult: 'true',
+         sort_by: 'popularity.desc',
+         language: 'ko-KR',
+         api_key: _api_key },
+      body: '{}' };
+
+      request(options, function (error, response, _body) {
+      if (error) throw new Error(error);
+      var body = JSON.parse(_body);
+      body["source"] = 'api';
+      client.setex(KEY_MOVIE_TMM_PAGE, 3600, JSON.stringify(body));
+      console.log(body);
+      return res.json(body);
+      });
+    }
+  });
 });
 
 module.exports = router;

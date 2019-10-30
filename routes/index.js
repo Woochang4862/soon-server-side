@@ -392,4 +392,10 @@ router.get('/movie/TMM/:page', function(req, res){
   });
 });
 
+//TODO:매월 1일 알림
+
+
+//TODO: 로그인
+//TODO:Cron을 이용하여 제작사 알림 등록하기 함수(이 제작사를 등록한 사용자가 없으면 Cron삭제, 그게 아니면 request 값과 DB비교 처리)
+
 module.exports = router;

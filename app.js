@@ -1,13 +1,14 @@
 var createError = require('http-errors');
 var express = require('express');
+var session  = require('express-session');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var messageRouter = require('./routes/message');
-
+var passport = require('passport');
+var flash = require('connect-flash');
 var app = express();
 
 // view engine setup
@@ -19,6 +20,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+require('./config/passport')(passport); 
+app.use(session({
+	secret: 'vidyapathaisalwaysrunning',
+	resave: true,
+	saveUninitialized: true
+ } )); // session secret
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
 
 app.use('/api', indexRouter);
 app.use('/users', usersRouter);

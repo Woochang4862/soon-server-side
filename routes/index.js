@@ -227,8 +227,8 @@ router.get('/movie/date/:date/:page', function (req, res) {
         url: 'https://api.themoviedb.org/3/discover/movie',
         qs:
         {
-          'primary_release_date.gte': date,
-          'primary_release_date.lte': date,
+          'release_date.gte': date,
+          'release_date.lte': date,
           page: _page,
           include_video: 'false',
           include_adult: 'true',
@@ -457,8 +457,6 @@ router.get('/movie/TMM/:page', function (req, res) {
     }
   });
 });
-
-//TODO:매월 1일 알림
 
 //TODO:Cron을 이용하여 제작사 알림 등록하기 함수(이 제작사를 등록한 사용자가 없으면 Cron삭제, 그게 아니면 request 값과 DB비교 처리)
 

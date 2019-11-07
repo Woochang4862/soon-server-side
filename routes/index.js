@@ -3,14 +3,13 @@ const router = express.Router();
 const request = require('request');
 const redis = require('redis');
 const passport = require('passport');
+const _api_key = require('../config/tmdb').api_key
 
 const client = redis.createClient(6379);
 
 client.on('error', (err) => {
   console.log("Error " + err);
 });
-
-const _api_key = 'dacdeb969b934abef7e5002b69d6c9ae';
 const _url = 'https://api.themoviedb.org/3';
 
 Date.prototype.yyyymmdd = function () {
@@ -134,7 +133,7 @@ router.get('/movie/company/:id/:page', function (req, res) {
         qs:
         {
           with_companies: id,
-          'primary_release_date.gte': currentDate,
+          'release_date.gte': currentDate,
           page: _page,
           include_video: 'false',
           region: 'KR',
@@ -182,7 +181,7 @@ router.get('/movie/genre/:id/:page', function (req, res) {
         qs:
         {
           with_genres: id,
-          'primary_release_date.gte': currentDate,
+          'release_date.gte': currentDate,
           page: _page,
           include_video: 'false',
           include_adult: 'true',
@@ -433,8 +432,8 @@ router.get('/movie/TMM/:page', function (req, res) {
         url: _url + '/discover/movie',
         qs:
         {
-          'primary_release_date.lte': lastDate,
-          'primary_release_date.gte': firstDate,
+          'release_date.lte': lastDate,
+          'release_date.gte': firstDate,
           page: _page,
           include_video: 'false',
           region: 'KR',

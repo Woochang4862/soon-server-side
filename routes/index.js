@@ -6,7 +6,7 @@ const passport = require('passport');
 const _api_key = require('../config/tmdb').api_key
 
 const client = redis.createClient(6379);
-
+const caching_time = 300;
 client.on('error', (err) => {
   console.log("Error " + err);
 });
@@ -101,7 +101,7 @@ router.get('/genre/all', function (req, res) {
           result["genres"][i]["icon_path"] = "/genre/" + result["genres"][i]["id"] + ".png";
         }
         result["source"] = 'api';
-        client.setex(KEY_GENRE_ALL, 3600, JSON.stringify(result));
+        client.setex(KEY_GENRE_ALL, caching_time, JSON.stringify(result));
         return res.json(result);
       });
     }
@@ -149,7 +149,7 @@ router.get('/movie/company/:id/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_COMPANY_ID_PAGE, 3600, JSON.stringify(body));
+        client.setex(KEY_MOVIE_COMPANY_ID_PAGE, caching_time, JSON.stringify(body));
         res.json(body);
       });
     }
@@ -197,7 +197,7 @@ router.get('/movie/genre/:id/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_GENRE_ID_PAGE, 3600, JSON.stringify(body));
+        client.setex(KEY_MOVIE_GENRE_ID_PAGE, caching_time, JSON.stringify(body));
         return res.json(body);
       });
     }
@@ -280,7 +280,7 @@ var searchCompanies = function (req, res, next) {
         if (error) throw new Error(error);
         var body = JSON.parse(body);
         body["source"] = 'api';
-        client.setex(KEY_SEARCH_COMPANY_QUERY_PAGE, 3600, JSON.stringify(body));
+        client.setex(KEY_SEARCH_COMPANY_QUERY_PAGE, caching_time, JSON.stringify(body));
         req.companies = body;
         next();
       });
@@ -321,7 +321,7 @@ var searchMovies = function (req, res, next) {
         try {
           var body = JSON.parse(_body);
           body["source"] = 'api';
-          client.setex(KEY_SEARCH_MOVIE_QUERY_PAGE, 3600, JSON.stringify(body));
+          client.setex(KEY_SEARCH_MOVIE_QUERY_PAGE, caching_time, JSON.stringify(body));
           req.movies = body;
           next();
         } catch (e) {
@@ -402,7 +402,7 @@ router.get('/movie/detail/:id', (req, res) => {
         if (error) throw new Error(error);
         var body = JSON.parse(body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_DETAIL_ID, 3600, JSON.stringify(body));
+        client.setex(KEY_MOVIE_DETAIL_ID, caching_time, JSON.stringify(body));
         return res.json(body);
       });
     }
@@ -449,7 +449,7 @@ router.get('/movie/TMM/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_TMM_PAGE, 3600, JSON.stringify(body));
+        client.setex(KEY_MOVIE_TMM_PAGE, caching_time, JSON.stringify(body));
         console.log(body);
         return res.json(body);
       });

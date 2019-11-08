@@ -136,7 +136,7 @@ router.get('/movie/company/:id/:page', function (req, res) {
           'release_date.gte': currentDate,
           page: _page,
           include_video: 'false',
-          region: 'KR',
+          region: 'US',
           include_adult: 'true',
           sort_by: 'popularity.desc',
           language: 'ko-KR',

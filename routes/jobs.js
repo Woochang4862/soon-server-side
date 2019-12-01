@@ -54,7 +54,7 @@ const _url = 'https://api.themoviedb.org/3';
 }, null, true, "Asia/Seoul");*/
 
 
-cron.schedule('* * 1 * *', function () {
+cron.schedule('0 0 1 * *', function () {
   var message = {
     to: '/topics/all',
 

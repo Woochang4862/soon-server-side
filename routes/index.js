@@ -226,8 +226,8 @@ router.get('/movie/date/:date/:page', function (req, res) {
         url: 'https://api.themoviedb.org/3/discover/movie',
         qs:
         {
-          'release_date.gte': date,
-          'release_date.lte': date,
+          'primary_release_date.gte': date,
+          'primary_release_date.lte': date,
           page: _page,
           include_video: 'false',
           include_adult: 'true',
@@ -434,6 +434,8 @@ router.get('/movie/TMM/:page', function (req, res) {
         {
           'release_date.lte': lastDate,
           'release_date.gte': firstDate,
+          'primary_release_date.lte': lastDate,
+          'primary_release_date.gte': firstDate,
           page: _page,
           include_video: 'false',
           region: 'KR',

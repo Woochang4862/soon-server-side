@@ -96,6 +96,7 @@ router.get('/genre/all', function (req, res) {
 
       request(options, function (error, response, body) {
         if (error) throw new Error(error);
+        console.log(body);
         var result = JSON.parse(body);
         for (var i = 0; i < result["genres"].length; i++) {
           result["genres"][i]["icon_path"] = "/genre/" + result["genres"][i]["id"] + ".png";

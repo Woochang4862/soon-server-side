@@ -90,8 +90,7 @@ router.get('/genre/all', function (req, res) {
       var options = {
         method: 'GET',
         url: 'https://api.themoviedb.org/3/genre/movie/list',
-        qs: { language: 'ko-KR', api_key: _api_key },
-        body: '{}'
+        qs: { language: 'ko-KR', api_key: _api_key }
       };
 
       request(options, function (error, response, body) {

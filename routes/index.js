@@ -141,8 +141,7 @@ router.get('/movie/company/:id/:page', function (req, res) {
           sort_by: 'popularity.desc',
           language: 'ko-KR',
           api_key: _api_key
-        },
-        body: '{}'
+        }
       };
 
       request(options, function (error, response, _body) {
@@ -189,8 +188,7 @@ router.get('/movie/genre/:id/:page', function (req, res) {
           sort_by: 'popularity.desc',
           language: 'ko-KR',
           api_key: _api_key
-        },
-        body: '{}'
+        }
       };
 
       request(options, function (error, response, _body) {
@@ -235,8 +233,7 @@ router.get('/movie/date/:date/:page', function (req, res) {
           region: 'KR',
           language: 'ko-KR',
           api_key: _api_key
-        },
-        body: '{}'
+        }
       };
 
       request(options, function (error, response, body) {
@@ -272,8 +269,7 @@ var searchCompanies = function (req, res, next) {
           query: _query,
           language: 'ko-KR',
           api_key: _api_key
-        },
-        body: '{}'
+        }
       };
 
       request(options, function (error, response, body) {
@@ -312,8 +308,7 @@ var searchMovies = function (req, res, next) {
           language: 'ko-KR',
           api_key: _api_key,
           region: 'KR'
-        },
-        body: '{}'
+        }
       };
 
       request(options, function (error, response, _body) {
@@ -394,8 +389,7 @@ router.get('/movie/detail/:id', (req, res) => {
           language: 'ko-KR',
           api_key: 'dacdeb969b934abef7e5002b69d6c9ae',
           region: 'KR'
-        },
-        body: '{}'
+        }
       };
 
       request(options, function (error, response, body) {
@@ -443,8 +437,7 @@ router.get('/movie/TMM/:page', function (req, res) {
           sort_by: 'popularity.desc',
           language: 'ko-KR',
           api_key: _api_key
-        },
-        body: '{}'
+        }
       };
 
       request(options, function (error, response, _body) {

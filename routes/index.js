@@ -118,10 +118,11 @@ router.get('/movie/company/:region/:id/:page', function (req, res) {
 
   var id = request_body.id;
   var _page = request_body.page;
+  var _region = request_body.region;
 
-  const KEY_MOVIE_COMPANY_ID_PAGE = req.originalUrl;
+  const KEY_MOVIE_COMPANY_REGION_ID_PAGE = req.originalUrl;
 
-  return client.get(KEY_MOVIE_COMPANY_ID_PAGE, (err, data) => {
+  return client.get(KEY_MOVIE_COMPANY_REGION_ID_PAGE, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
@@ -148,7 +149,7 @@ router.get('/movie/company/:region/:id/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_COMPANY_ID_PAGE, caching_time, JSON.stringify(body));
+        client.setex(KEY_MOVIE_COMPANY_REGION_ID_PAGE, caching_time, JSON.stringify(body));
         res.json(body);
       });
     }
@@ -165,10 +166,11 @@ router.get('/movie/genre/:region/:id/:page', function (req, res) {
 
   var id = request_body.id;
   var _page = request_body.page;
+  var _region = request_body.region;
 
-  const KEY_MOVIE_GENRE_ID_PAGE = req.originalUrl;
+  const KEY_MOVIE_GENRE_REGION_ID_PAGE = req.originalUrl;
 
-  return client.get(KEY_MOVIE_GENRE_ID_PAGE, (err, data) => {
+  return client.get(KEY_MOVIE_GENRE_REGION_ID_PAGE, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
@@ -184,7 +186,7 @@ router.get('/movie/genre/:region/:id/:page', function (req, res) {
           page: _page,
           include_video: 'false',
           include_adult: 'true',
-          region: 'KR',
+          region: _region,
           sort_by: 'popularity.desc',
           language: 'ko-KR',
           api_key: _api_key
@@ -195,7 +197,7 @@ router.get('/movie/genre/:region/:id/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_GENRE_ID_PAGE, caching_time, JSON.stringify(body));
+        client.setex(KEY_MOVIE_GENRE_REGION_ID_PAGE, caching_time, JSON.stringify(body));
         return res.json(body);
       });
     }
@@ -210,14 +212,16 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
 
   var date = request_body.date;
   var _page = request_body.page;
+  var _region = request_body.region;
   console.log(date);
 
-  const KEY_MOVIE_DATE_DATE_PAGE = req.originalUrl;
+  const KEY_MOVIE_DATE_REGION_DATE_PAGE = req.originalUrl;
 
-  return client.get(KEY_MOVIE_DATE_DATE_PAGE, (err, data) => {
+  return client.get(KEY_MOVIE_DATE_REGION_DATE_PAGE, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
+      return red.json(data);
     } else {
       var options = {
         method: 'GET',
@@ -230,7 +234,7 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
           include_video: 'false',
           include_adult: 'true',
           sort_by: 'popularity.desc',
-          region: 'KR',
+          region: _region,
           language: 'ko-KR',
           api_key: _api_key
         }
@@ -240,6 +244,7 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(body);
         body["source"] = 'api';
+        client.setex(KEY_MOVIE_DATE_REGION_DATE_PAGE, caching_time, JSON.stringify(body));
         return res.json(body);
       });
     }
@@ -249,10 +254,11 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
 var searchCompanies = function (req, res, next) {
   var _query = req.params.query;
   var _page = req.params.page;
+  var _region = request_body.region;
 
-  const KEY_SEARCH_COMPANY_QUERY_PAGE = req.originalUrl;
+  const KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
 
-  client.get(KEY_SEARCH_COMPANY_QUERY_PAGE, (err, data) => {
+  client.get(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
@@ -268,7 +274,8 @@ var searchCompanies = function (req, res, next) {
           page: _page,
           query: _query,
           language: 'ko-KR',
-          api_key: _api_key
+          api_key: _api_key,
+          region: _region
         }
       };
 
@@ -276,7 +283,7 @@ var searchCompanies = function (req, res, next) {
         if (error) throw new Error(error);
         var body = JSON.parse(body);
         body["source"] = 'api';
-        client.setex(KEY_SEARCH_COMPANY_QUERY_PAGE, caching_time, JSON.stringify(body));
+        client.setex(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, caching_time, JSON.stringify(body));
         req.companies = body;
         next();
       });
@@ -287,10 +294,11 @@ var searchCompanies = function (req, res, next) {
 var searchMovies = function (req, res, next) {
   var _query = req.params.query;
   var _page = req.params.page;
+  var _region = request_body.region;
 
-  const KEY_SEARCH_MOVIE_QUERY_PAGE = req.originalUrl;
+  const KEY_SEARCH_MOVIE_REGION_QUERY_PAGE = req.originalUrl;
 
-  client.get(KEY_SEARCH_MOVIE_QUERY_PAGE, (err, data) => {
+  client.get(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
@@ -307,7 +315,7 @@ var searchMovies = function (req, res, next) {
           query: _query,
           language: 'ko-KR',
           api_key: _api_key,
-          region: 'KR'
+          region: _region
         }
       };
 
@@ -316,7 +324,7 @@ var searchMovies = function (req, res, next) {
         try {
           var body = JSON.parse(_body);
           body["source"] = 'api';
-          client.setex(KEY_SEARCH_MOVIE_QUERY_PAGE, caching_time, JSON.stringify(body));
+          client.setex(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, caching_time, JSON.stringify(body));
           req.movies = body;
           next();
         } catch (e) {
@@ -332,8 +340,11 @@ router.get('/search/multi/:region/:query/:page', searchCompanies, searchMovies, 
 
   var _query = req.params.query;
   var _page = req.params.page;
+  var _region = request_body.region;
   console.log("request query : " + _query);
   console.log("request page : " + _page);
+  console.log("request region : " + _region);
+  
 
   var companies = req.companies;
   var movies = req.movies;
@@ -351,8 +362,10 @@ router.get('/search/company/:region/:query/:page', searchCompanies, function (re
 
   var _query = req.params.query;
   var _page = req.params.page;
+  var _region = request_body.region;
   console.log("request query : " + _query);
   console.log("request page : " + _page);
+  console.log("request region : " + _region);
   res.json(req.companies);
 });
 
@@ -361,8 +374,10 @@ router.get('/search/movie/:region/:query/:page', searchMovies, function (req, re
 
   var _query = req.params.query;
   var _page = req.params.page;
+  var _region = request_body.region;
   console.log("request query : " + _query);
   console.log("request page : " + _page);
+  console.log("request region : " + _region);
   console.log(req.movies);
   res.json(req.movies);
 });
@@ -371,10 +386,11 @@ router.get('/movie/detail/:region/:id', (req, res) => {
   console.log(req.path);
 
   var id = req.params.id;
+  var _region = request_body.region;
 
-  const KEY_MOVIE_DETAIL_ID = req.originalUrl;
+  const KEY_MOVIE_DETAIL_REGION_ID = req.originalUrl;
 
-  return client.get(KEY_MOVIE_DETAIL_ID, (err, data) => {
+  return client.get(KEY_MOVIE_DETAIL_REGION_ID, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
@@ -388,7 +404,7 @@ router.get('/movie/detail/:region/:id', (req, res) => {
           append_to_response: 'videos,images',
           language: 'ko-KR',
           api_key: 'dacdeb969b934abef7e5002b69d6c9ae',
-          region: 'KR'
+          region: _region
         }
       };
 
@@ -396,7 +412,7 @@ router.get('/movie/detail/:region/:id', (req, res) => {
         if (error) throw new Error(error);
         var body = JSON.parse(body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_DETAIL_ID, caching_time, JSON.stringify(body));
+        client.setex(KEY_MOVIE_DETAIL_REGION_ID, caching_time, JSON.stringify(body));
         return res.json(body);
       });
     }
@@ -410,11 +426,12 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
   var lastDate = new Date(now.getYear() + 1900, now.getMonth() + 1, 0).yyyymmdd();
   console.log(firstDate);
   console.log(lastDate);
+  var _region = request_body.region;
   var _page = req.params.page;
 
-  const KEY_MOVIE_TMM_PAGE = req.originalUrl;
+  const KEY_MOVIE_TMM_REGION_PAGE = req.originalUrl;
 
-  return client.get(KEY_MOVIE_TMM_PAGE, (err, data) => {
+  return client.get(KEY_MOVIE_TMM_REGION_PAGE, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
@@ -432,7 +449,7 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
           'primary_release_date.gte': firstDate,
           page: _page,
           include_video: 'false',
-          region: 'KR',
+          region: _region,
           include_adult: 'true',
           sort_by: 'popularity.desc',
           language: 'ko-KR',
@@ -444,7 +461,7 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
         body["source"] = 'api';
-        client.setex(KEY_MOVIE_TMM_PAGE, caching_time, JSON.stringify(body));
+        client.setex(KEY_MOVIE_TMM_REGION_PAGE, caching_time, JSON.stringify(body));
         console.log(body);
         return res.json(body);
       });

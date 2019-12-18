@@ -221,7 +221,7 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
     if (data) {
       var data = JSON.parse(data);
       data["source"] = 'cache';
-      return red.json(data);
+      return res.json(data);
     } else {
       var options = {
         method: 'GET',

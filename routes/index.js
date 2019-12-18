@@ -4,6 +4,11 @@ const request = require('request');
 const redis = require('redis');
 const passport = require('passport');
 const _api_key = require('../config/tmdb').api_key
+const mysql = require('mysql');
+const dbconfig = require('../config/database');
+const connection = mysql.createConnection(dbconfig.connection);
+
+connection.query('USE ' + dbconfig.database);
 
 const client = redis.createClient(6379);
 const caching_time = 300;
@@ -22,19 +27,19 @@ Date.prototype.yyyymmdd = function () {
   ].join('-');
 };
 
-router.get('/status', function(req, res){
-  if(req.isAuthenticated()){
+router.get('/status', function (req, res) {
+  if (req.isAuthenticated()) {
     res.json({
-      'message':'Authenticated Success',
-      'username':req.user.username
+      'message': 'Authenticated Success',
+      'username': req.user.username
     })
-  }else{
+  } else {
     res.json({
-      'message':'Authenticated Failed',
-      'error_message':function(){
-        if(req.flash('signupMessage'))
+      'message': 'Authenticated Failed',
+      'error_message': function () {
+        if (req.flash('signupMessage'))
           return req.flash('signupMessage')
-        if(req.flash('loginMessage'))
+        if (req.flash('loginMessage'))
           return req.flash('loginMessage')
       }
     })
@@ -42,9 +47,9 @@ router.get('/status', function(req, res){
 });
 
 router.post('/login', passport.authenticate('local-login', {
-  successRedirect: '/api/status', 
-  failureRedirect: '/api/status', 
-  failureFlash: true 
+  successRedirect: '/api/status',
+  failureRedirect: '/api/status',
+  failureFlash: true
 }),
   function (req, res) {
     console.log("hello");
@@ -58,7 +63,7 @@ router.post('/login', passport.authenticate('local-login', {
   });
 
 router.post('/signup', passport.authenticate('local-signup', {
-  successRedirect: '/api/status', 
+  successRedirect: '/api/status',
   failureRedirect: '/api/status',
   failureFlash: true
 }));
@@ -344,7 +349,7 @@ router.get('/search/multi/:region/:query/:page', searchCompanies, searchMovies, 
   console.log("request query : " + _query);
   console.log("request page : " + _page);
   console.log("request region : " + _region);
-  
+
 
   var companies = req.companies;
   var movies = req.movies;
@@ -469,6 +474,52 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
   });
 });
 
-//TODO:Cron을 이용하여 제작사 알림 등록하기 함수(이 제작사를 등록한 사용자가 없으면 Cron삭제, 그게 아니면 request 값과 DB비교 처리)
+router.post('/add/alarm/company', function (req, res) {
+  connection.query('SELECT * FROM ' + dbconfig.company_alarm_table + ' WHERE company_id ="' + req.body.company_id + '"', function (err, row) {
+    if (err) throw err;
+    if (row && row.length) {
+      var sql = "UPDATE " + dbconfig.company_alarm_table + " SET member = member + 1 WHERE company_id = " + req.body.company_id;
+      connection.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log(result.affectedRows + " record(s) updated");
+        return res.sendStatus(200);
+      });
+    } else {
+      var insertQuery = "INSERT INTO " + dbconfig.company_alarm_table + " ( company_id, member ) values (?,1)";
+      connection.query(insertQuery, [req.body.company_id], function (err, rows) {
+        if (err) throw new Error(err)
+        else {
+          console.log(rows + " record inserted");
+          return res.sendStatus(200);
+        }
+      });
+    }
+  });
+});
+
+router.post('/remove/alarm/company', function (req, res) {
+  connection.query('SELECT * FROM ' + dbconfig.company_alarm_table + ' WHERE company_id="' + req.body.company_id + '"', function (err, row) {
+    if (err) {
+      throw new Error(error);
+    } else {
+      if (row && row.length) {
+        var sql = "UPDATE " + dbconfig.company_alarm_table + " SET member = member - 1 WHERE company_id = " + row[0].company_id;
+        connection.query(sql, function (err, result) {
+          if (err) throw err;
+          if (row[0].member <= 1) {
+            sql = "DELETE FROM " + dbconfig.company_alarm_table + " WHERE company_id = " + row[0].company_id;
+            connection.query(sql, function (err, result) {
+              if (err) throw err;
+              console.log("Number of records deleted: " + result.affectedRows);
+              return res.sendStatus(200);
+            });
+          } else {
+            return res.sendStatus(200);
+          }
+        });
+      }
+    }
+  });
+});
 
 module.exports = router;

@@ -254,7 +254,7 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
 var searchCompanies = function (req, res, next) {
   var _query = req.params.query;
   var _page = req.params.page;
-  var _region = request_body.region;
+  var _region = req.params.region;
 
   const KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
 
@@ -294,7 +294,7 @@ var searchCompanies = function (req, res, next) {
 var searchMovies = function (req, res, next) {
   var _query = req.params.query;
   var _page = req.params.page;
-  var _region = request_body.region;
+  var _region = req.params.region;
 
   const KEY_SEARCH_MOVIE_REGION_QUERY_PAGE = req.originalUrl;
 
@@ -340,7 +340,7 @@ router.get('/search/multi/:region/:query/:page', searchCompanies, searchMovies, 
 
   var _query = req.params.query;
   var _page = req.params.page;
-  var _region = request_body.region;
+  var _region = req.params.region;
   console.log("request query : " + _query);
   console.log("request page : " + _page);
   console.log("request region : " + _region);
@@ -362,7 +362,7 @@ router.get('/search/company/:region/:query/:page', searchCompanies, function (re
 
   var _query = req.params.query;
   var _page = req.params.page;
-  var _region = request_body.region;
+  var _region = req.params.region;
   console.log("request query : " + _query);
   console.log("request page : " + _page);
   console.log("request region : " + _region);
@@ -374,7 +374,7 @@ router.get('/search/movie/:region/:query/:page', searchMovies, function (req, re
 
   var _query = req.params.query;
   var _page = req.params.page;
-  var _region = request_body.region;
+  var _region = req.params.region;
   console.log("request query : " + _query);
   console.log("request page : " + _page);
   console.log("request region : " + _region);
@@ -386,7 +386,7 @@ router.get('/movie/detail/:region/:id', (req, res) => {
   console.log(req.path);
 
   var id = req.params.id;
-  var _region = request_body.region;
+  var _region = req.params.region;
 
   const KEY_MOVIE_DETAIL_REGION_ID = req.originalUrl;
 
@@ -426,7 +426,7 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
   var lastDate = new Date(now.getYear() + 1900, now.getMonth() + 1, 0).yyyymmdd();
   console.log(firstDate);
   console.log(lastDate);
-  var _region = request_body.region;
+  var _region = req.params.region;
   var _page = req.params.page;
 
   const KEY_MOVIE_TMM_REGION_PAGE = req.originalUrl;

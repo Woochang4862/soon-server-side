@@ -108,7 +108,7 @@ router.get('/genre/all', function (req, res) {
   });
 });
 
-router.get('/movie/company/:id/:page', function (req, res) {
+router.get('/movie/company/:region/:id/:page', function (req, res) {
   console.log(req.path);
 
   var request_body = req.params;
@@ -155,7 +155,7 @@ router.get('/movie/company/:id/:page', function (req, res) {
   })
 });
 
-router.get('/movie/genre/:id/:page', function (req, res) {
+router.get('/movie/genre/:region/:id/:page', function (req, res) {
   console.log(req.path);
 
   var request_body = req.params;
@@ -202,7 +202,7 @@ router.get('/movie/genre/:id/:page', function (req, res) {
   });
 });
 
-router.get('/movie/date/:date/:page', function (req, res) {
+router.get('/movie/date/:region/:date/:page', function (req, res) {
   console.log(req.path);
 
   var request_body = req.params;
@@ -327,7 +327,7 @@ var searchMovies = function (req, res, next) {
   });
 };
 
-router.get('/search/multi/:query/:page', searchCompanies, searchMovies, function (req, res) {
+router.get('/search/multi/:region/:query/:page', searchCompanies, searchMovies, function (req, res) {
   console.log(req.path);
 
   var _query = req.params.query;
@@ -346,7 +346,7 @@ router.get('/search/multi/:query/:page', searchCompanies, searchMovies, function
   }
 });
 
-router.get('/search/company/:query/:page', searchCompanies, function (req, res) {
+router.get('/search/company/:region/:query/:page', searchCompanies, function (req, res) {
   console.log(req.path);
 
   var _query = req.params.query;
@@ -356,7 +356,7 @@ router.get('/search/company/:query/:page', searchCompanies, function (req, res) 
   res.json(req.companies);
 });
 
-router.get('/search/movie/:query/:page', searchMovies, function (req, res) {
+router.get('/search/movie/:region/:query/:page', searchMovies, function (req, res) {
   console.log(req.path);
 
   var _query = req.params.query;
@@ -367,7 +367,7 @@ router.get('/search/movie/:query/:page', searchMovies, function (req, res) {
   res.json(req.movies);
 });
 
-router.get('/movie/detail/:id', (req, res) => {
+router.get('/movie/detail/:region/:id', (req, res) => {
   console.log(req.path);
 
   var id = req.params.id;
@@ -403,7 +403,7 @@ router.get('/movie/detail/:id', (req, res) => {
   });
 });
 
-router.get('/movie/TMM/:page', function (req, res) {
+router.get('/movie/TMM/:region/:page', function (req, res) {
   console.log(req.path);
   var now = new Date();
   var firstDate = new Date(now.getYear() + 1900, now.getMonth(), 1).yyyymmdd();

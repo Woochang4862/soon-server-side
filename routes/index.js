@@ -4,6 +4,7 @@ const request = require('request');
 const redis = require('redis');
 const passport = require('passport');
 const _api_key = require('../config/tmdb').api_key
+const async = require("async");
 const mysql = require('mysql');
 const dbconfig = require('../config/database');
 const connection = mysql.createConnection(dbconfig.connection);
@@ -485,12 +486,70 @@ router.post('/add/alarm/company', function (req, res) {
         return res.sendStatus(200);
       });
     } else {
-      var insertQuery = "INSERT INTO " + dbconfig.company_alarm_table + " ( company_id, member ) values (?,1)";
+      var insertQuery = "INSERT INTO `" + dbconfig.company_alarm_table + "` (company_id, member) values (?,1)";
+      console.log(insertQuery);
       connection.query(insertQuery, [req.body.company_id], function (err, rows) {
         if (err) throw new Error(err)
+        
+        
         else {
           console.log(rows + " record inserted");
-          return res.sendStatus(200);
+          connection.query("CREATE TABLE `" + req.body.company_id + "` (movie_id INT UNSIGNED PRIMARY KEY)", function (err, result) {
+            if (err) throw err;
+            console.log("Table created");
+            let oldPage = 1;
+            let nextPage = 2;
+            let movie_id_array = new Array();
+            async.whilst(function () {
+              // Check that oldPage is less than newPage
+              return oldPage < nextPage;
+            },
+              function (next) {
+                var options = {
+                  method: 'GET',
+                  url: 'https://api.themoviedb.org/3/discover/movie',
+                  qs:
+                  {
+                    with_companies: req.body.company_id,
+                    'release_date.gte': new Date().yyyymmdd(),
+                    page: oldPage,
+                    include_video: 'false',
+                    region: 'US',
+                    include_adult: 'true',
+                    sort_by: 'popularity.desc',
+                    language: 'ko-KR',
+                    api_key: _api_key
+                  }
+                };
+
+                request(options, function (error, response, body) {
+                  if(err) throw err;
+                  if (response.statusCode == 200) {
+                    json = JSON.parse(body);
+                    console.log(oldPage);
+                    json.results.forEach(result => {
+                      movie_id_array.push([result.id]);
+                    });
+                  }
+                  if (json.results.length) {
+                    // When the json has no more data loaded, nextPage will stop 
+                    // incrementing hence become equal to oldPage and return 
+                    // false in the test function.
+                    nextPage++;
+                  }
+                  oldPage++;
+                  next();
+                });
+              },
+              function (err) {
+                // All things are done!
+                connection.query("INSERT INTO `"+req.body.company_id+"` (movie_id) VALUES ?", [movie_id_array], function (err, result) {
+                  if (err) throw err;
+                  console.log("Number of records inserted: " + result.affectedRows);
+                  return res.sendStatus(200);
+                });
+              });
+          });
         }
       });
     }
@@ -507,10 +566,12 @@ router.post('/remove/alarm/company', function (req, res) {
         connection.query(sql, function (err, result) {
           if (err) throw err;
           if (row[0].member <= 1) {
-            sql = "DELETE FROM " + dbconfig.company_alarm_table + " WHERE company_id = " + row[0].company_id;
-            connection.query(sql, function (err, result) {
+            var deleteSql = "DELETE FROM " + dbconfig.company_alarm_table + " WHERE company_id = " + row[0].company_id+"; ";
+            var dropSql = "DROP TABLE `"+row[0].company_id+"`;"
+            connection.query(deleteSql+dropSql, function (err, results, field) {
               if (err) throw err;
-              console.log("Number of records deleted: " + result.affectedRows);
+              console.log("Number of records deleted: " + results[0].affectedRows);
+              console.log("Table "+results[1].affectedRows+" dropped");
               return res.sendStatus(200);
             });
           } else {

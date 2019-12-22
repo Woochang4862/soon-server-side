@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const FCM = require('fcm-node');
 const serverKey = 'AAAAI0G_Y0Q:APA91bGhn2kP760NOiIen0omFbsXL5Y2rjo8xXMruA3NOB7ejNBWIFW0QvUfVejexO_ZBMppGcoBEFK_1rWeuI2SD2pWWXCkxmPToCh8usIQx9W25krGRGekcbo2WOS27YmazEWQQNgF';
 const fcm = new FCM(serverKey);
+const mysql = require('mysql');
 const dbconfig = require('../config/database');
 const connection = mysql.createConnection(dbconfig.connection);
 

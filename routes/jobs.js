@@ -58,7 +58,7 @@ cron.schedule('* * * * *', function () {
             }
           };
 
-          request(options, function (error, response, body) {
+          request(options, function (err, response, body) {
             if (err) throw err;
             if (response.statusCode == 200) {
               json = JSON.parse(body);
@@ -88,29 +88,38 @@ cron.schedule('* * * * *', function () {
             });
             console.log(hasDiff(tmp, movie_id_array));
             if (hasDiff(tmp, movie_id_array)) {
-              var message = {
-                to: '/topics/' + row.company_id,
-
-                notification: {
-                  title: 'Soon',
-                  body: row.company_id
+              var options = {
+                url : "https://api.themoviedb.org/3/company/"+row.company_id,
+                qs:{
+                  api_key:_api_key
                 }
-              };
-
-              fcm.send(message, function (err, response) {
-                if (err) {
-                  console.log("Something has gone wrong!");
-                } else {
-                  console.log("Successfully sent with response: ", response);
-                }
-                connection.query("DELETE FROM `" + row.company_id + "`", function (err, result) {
-                  if (err) throw err;
-                  console.log("Number of records deleted: " + result.affectedRows);
-                  connection.query("INSERT INTO `" + row.company_id + "` (movie_id) VALUES ?", [tmp], function (err, result) {
+              }
+              request(options, function (err,response,body){
+                if(err) throw err;
+                var message = {
+                  to: '/topics/' + row.company_id,
+  
+                  notification: {
+                    title: 'Soon',
+                    body: JSON.parse(body).name+"에 새로운 영화가 등록되었습니다."
+                  }
+                };
+  
+                fcm.send(message, function (err, response) {
+                  if (err) {
+                    console.log("Something has gone wrong!");
+                  } else {
+                    console.log("Successfully sent with response: ", response);
+                  }
+                  connection.query("DELETE FROM `" + row.company_id + "`", function (err, result) {
                     if (err) throw err;
-                    console.log("Number of records inserted: " + result.affectedRows);
-                    i++;
-                    next();
+                    console.log("Number of records deleted: " + result.affectedRows);
+                    connection.query("INSERT INTO `" + row.company_id + "` (movie_id) VALUES ?", [tmp], function (err, result) {
+                      if (err) throw err;
+                      console.log("Number of records inserted: " + result.affectedRows);
+                      i++;
+                      next();
+                    });
                   });
                 });
               });

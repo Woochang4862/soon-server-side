@@ -1,7 +1,11 @@
-var cron = require('node-cron');
+const cron = require('node-cron');
 const FCM = require('fcm-node');
 const serverKey = 'AAAAI0G_Y0Q:APA91bGhn2kP760NOiIen0omFbsXL5Y2rjo8xXMruA3NOB7ejNBWIFW0QvUfVejexO_ZBMppGcoBEFK_1rWeuI2SD2pWWXCkxmPToCh8usIQx9W25krGRGekcbo2WOS27YmazEWQQNgF';
 const fcm = new FCM(serverKey);
+const dbconfig = require('../config/database');
+const connection = mysql.createConnection(dbconfig.connection);
+
+connection.query('USE ' + dbconfig.database);
 
 const _api_key = 'dacdeb969b934abef7e5002b69d6c9ae';
 const _url = 'https://api.themoviedb.org/3';

@@ -5,11 +5,23 @@ const fcm = new FCM(serverKey);
 const mysql = require('mysql');
 const dbconfig = require('../config/database');
 const connection = mysql.createConnection(dbconfig.connection);
+const async = require("async");
+const request = require('request');
 
 connection.query('USE ' + dbconfig.database);
 
 const _api_key = 'dacdeb969b934abef7e5002b69d6c9ae';
 const _url = 'https://api.themoviedb.org/3';
+
+Date.prototype.yyyymmdd = function () {
+    var mm = this.getMonth() + 1;
+    var dd = this.getDate();
+
+    return [this.getFullYear(),
+    (mm > 9 ? '' : '0') + mm,
+    (dd > 9 ? '' : '0') + dd
+    ].join('-');
+};
 
 cron.schedule('0 * * * *', function () {
   connection.query("SELECT * FROM " + dbconfig.company_alarm_table, function (err, rows, fields) {

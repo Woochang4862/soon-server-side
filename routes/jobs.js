@@ -23,7 +23,7 @@ Date.prototype.yyyymmdd = function () {
     ].join('-');
 };
 
-cron.schedule('0 * * * *', function () {
+cron.schedule('* * * * *', function () {
   connection.query("SELECT * FROM " + dbconfig.company_alarm_table, function (err, rows, fields) {
     if (err) throw err;
     let i = 0;

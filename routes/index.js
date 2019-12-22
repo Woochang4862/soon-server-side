@@ -532,8 +532,6 @@ router.post('/add/alarm/company', function (req, res) {
             console.log(insertQuery);
             connection.query(insertQuery, [req.body.company_id], function (err, rows) {
               if (err) throw new Error(err)
-
-
               else {
                 console.log(rows + " record inserted");
                 connection.query("CREATE TABLE `" + req.body.company_id + "` (movie_id INT UNSIGNED PRIMARY KEY)", function (err, result) {
@@ -629,7 +627,6 @@ router.post('/remove/alarm/company', function (req, res) {
               var sql = "UPDATE " + dbconfig.company_alarm_table + " SET member = member - 1 WHERE company_id = " + row[0].company_id;
               connection.query(sql, function (err, result) {
                 if (err) throw err;
-
                 if (row[0].member <= 1) {
                   var deleteSql = "DELETE FROM " + dbconfig.company_alarm_table + " WHERE company_id = " + row[0].company_id + "; ";
                   var dropSql = "DROP TABLE `" + row[0].company_id + "`;"
@@ -648,7 +645,7 @@ router.post('/remove/alarm/company', function (req, res) {
         }
       });
     } else {
-
+      return res.sendStatus(200);
     }
   });
 });

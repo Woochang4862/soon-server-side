@@ -5,6 +5,7 @@ const redis = require('redis');
 const passport = require('passport');
 const _api_key = require('../config/tmdb').api_key
 const mysql = require('mysql');
+const async = require('async');
 const dbconfig = require('../config/database');
 const connection = mysql.createConnection(dbconfig.connection);
 
@@ -143,7 +144,7 @@ router.get('/movie/company/:region/:id/:page', function (req, res) {
           page: _page,
           include_video: 'false',
           region: 'US',
-          include_adult: 'true',
+          include_adult: 'false',
           sort_by: 'popularity.desc',
           language: 'ko-KR',
           api_key: _api_key
@@ -190,7 +191,7 @@ router.get('/movie/genre/:region/:id/:page', function (req, res) {
           'release_date.gte': currentDate,
           page: _page,
           include_video: 'false',
-          include_adult: 'true',
+          include_adult: 'false',
           region: _region,
           sort_by: 'popularity.desc',
           language: 'ko-KR',
@@ -237,7 +238,7 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
           'primary_release_date.lte': date,
           page: _page,
           include_video: 'false',
-          include_adult: 'true',
+          include_adult: 'false',
           sort_by: 'popularity.desc',
           region: _region,
           language: 'ko-KR',
@@ -275,7 +276,7 @@ var searchCompanies = function (req, res, next) {
         url: _url + '/search/company',
         qs:
         {
-          include_adult: 'true',
+          include_adult: 'false',
           page: _page,
           query: _query,
           language: 'ko-KR',
@@ -315,7 +316,7 @@ var searchMovies = function (req, res, next) {
         url: _url + '/search/movie',
         qs:
         {
-          include_adult: 'true',
+          include_adult: 'false',
           page: _page,
           query: _query,
           language: 'ko-KR',
@@ -455,7 +456,7 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
           page: _page,
           include_video: 'false',
           region: _region,
-          include_adult: 'true',
+          include_adult: 'false',
           sort_by: 'popularity.desc',
           language: 'ko-KR',
           api_key: _api_key
@@ -490,7 +491,61 @@ router.post('/add/alarm/company', function (req, res) {
         if (err) throw new Error(err)
         else {
           console.log(rows + " record inserted");
-          return res.sendStatus(200);
+          connection.query("CREATE TABLE `" + req.body.company_id + "` (movie_id INT UNSIGNED PRIMARY KEY)", function (err, result) {
+            if (err) throw err;
+            console.log("Table`" + req.body.company_id + "` created");
+          });
+          let oldPage = 1;
+          let nextPage = 2;
+          let json;
+          let movie_id_array = new Array();
+          async.whilst(function () {
+            // Check that oldPage is less than newPage
+            return oldPage < nextPage;
+          },
+            function (next) {
+              var options = {
+                method: 'GET',
+                url: 'https://api.themoviedb.org/3/discover/movie',
+                qs:
+                {
+                  with_companies: req.body.company_id,
+                  'release_date.gte': new Date().yyyymmdd(),
+                  page: oldPage,
+                  include_video: 'false',
+                  region: 'US',
+                  include_adult: 'false',
+                  sort_by: 'popularity.desc',
+                  language: 'ko-KR',
+                  api_key: _api_key
+                }
+              };
+              request(options, function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                  console.log(oldPage);
+                  json = JSON.parse(body);
+                  json.results.forEach(result => {
+                    movie_id_array.push([result.id])
+                  });
+                }
+                if (json.results.length) {
+                  // When the json has no more data loaded, nextPage will stop 
+                  // incrementing hence become equal to oldPage and return 
+                  // false in the test function.
+                  nextPage++;
+                }
+                oldPage++;
+                next();
+              });
+            },
+            function (err) {
+              if (err) throw err;
+              connection.query("INSERT INTO `" + req.body.company_id + "` (movie_id) VALUES ?", [movie_id_array], function (err, result) {
+                if (err) throw err;
+                console.log("Number of records inserted: " + result.affectedRows);
+                return res.sendStatus(200);
+              });
+            });
         }
       });
     }
@@ -507,10 +562,12 @@ router.post('/remove/alarm/company', function (req, res) {
         connection.query(sql, function (err, result) {
           if (err) throw err;
           if (row[0].member <= 1) {
-            sql = "DELETE FROM " + dbconfig.company_alarm_table + " WHERE company_id = " + row[0].company_id;
-            connection.query(sql, function (err, result) {
+            var sql1 = "DELETE FROM " + dbconfig.company_alarm_table + " WHERE company_id = " + row[0].company_id + "; ";
+            var sql2 = "DROP TABLE `" + row[0].company_id + "`;";
+            connection.query(sql1 + sql2, function (err, results, fields) {
               if (err) throw err;
-              console.log("Number of records deleted: " + result.affectedRows);
+              console.log("Number of records deleted: " + results[0].affectedRows);
+              console.log("Table " + row[0].company_id + " dropped: " + results[1].affectedRows);
               return res.sendStatus(200);
             });
           } else {

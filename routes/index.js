@@ -476,6 +476,8 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
         results.forEach(result => {
           if(result.popularity>=5){
             body["results"].push(result);
+          } else {
+            body["total_results"]--;
           }
         });
         client.setex(KEY_MOVIE_TMM_REGION_PAGE, caching_time, JSON.stringify(body));

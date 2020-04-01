@@ -205,6 +205,7 @@ router.get('/movie/genre/:region/:id/:page', function (req, res) {
       request(options, function (error, response, _body) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
+
         body["source"] = 'api';
         client.setex(KEY_MOVIE_GENRE_REGION_ID_PAGE, caching_time, JSON.stringify(body));
         return res.json(body);
@@ -470,6 +471,13 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
         if (error) throw new Error(error);
         var body = JSON.parse(_body);
         body["source"] = 'api';
+        var results = body["results"];
+        body["results"] = [];
+        results.forEach(result => {
+          if(result.popularity>=5){
+            body["results"].push(result);
+          }
+        });
         client.setex(KEY_MOVIE_TMM_REGION_PAGE, caching_time, JSON.stringify(body));
         console.log(body);
         return res.json(body);

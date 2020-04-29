@@ -474,7 +474,7 @@ router.get('/movie/TMM/:region/:page', function (req, res) {
         var results = body["results"];
         body["results"] = [];
         results.forEach(result => {
-          if(result.popularity>=5){
+          if(result.popularity>=0){
             body["results"].push(result);
           } else {
             body["total_results"]--;

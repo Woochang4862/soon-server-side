@@ -117,17 +117,15 @@ router.get('/genre/all', function (req, res) {
   });
 });
 
-router.get('/movie/company/:region/:id/:page', function (req, res) {
-  console.log(req.path);
-
-  var request_body = req.params;
-  var currentDate = new Date().yyyymmdd();
-  console.log(request_body);
+router.get('/movie/company', function (req, res) {
+  const qs = req.query;
+  console.log(qs);
+  const currentDate = new Date().yyyymmdd();
   console.log(currentDate);
 
-  var id = request_body.id;
-  var _page = request_body.page;
-  var _region = request_body.region;
+  const id = qs.id;
+  const _page = qs.page;
+  const _region = qs.region;
 
   const KEY_MOVIE_COMPANY_REGION_ID_PAGE = req.originalUrl;
 
@@ -139,7 +137,7 @@ router.get('/movie/company/:region/:id/:page', function (req, res) {
     } else {
       var options = {
         method: 'GET',
-        url: 'https://api.themoviedb.org/3/discover/movie',
+        url: _url + '/discover/movie',
         qs:
         {
           with_companies: id,
@@ -165,17 +163,15 @@ router.get('/movie/company/:region/:id/:page', function (req, res) {
   })
 });
 
-router.get('/movie/genre/:region/:id/:page', function (req, res) {
-  console.log(req.path);
-
-  var request_body = req.params;
-  var currentDate = new Date().yyyymmdd();
-  console.log(request_body);
+router.get('/movie/genre', function (req, res) {
+  const qs = req.query;
+  console.log(qs);
+  const currentDate = new Date().yyyymmdd();
   console.log(currentDate);
 
-  var id = request_body.id;
-  var _page = request_body.page;
-  var _region = request_body.region;
+  const id = qs.id;
+  const _page = qs.page;
+  const _region = qs.region;
 
   const KEY_MOVIE_GENRE_REGION_ID_PAGE = req.originalUrl;
 
@@ -187,7 +183,7 @@ router.get('/movie/genre/:region/:id/:page', function (req, res) {
     } else {
       var options = {
         method: 'GET',
-        url: 'https://api.themoviedb.org/3/discover/movie',
+        url: _url + '/discover/movie',
         qs:
         {
           with_genres: id,
@@ -214,16 +210,14 @@ router.get('/movie/genre/:region/:id/:page', function (req, res) {
   });
 });
 
-router.get('/movie/date/:region/:date/:page', function (req, res) {
-  console.log(req.path);
-
-  var request_body = req.params;
-  console.log(request_body);
-
-  var date = request_body.date;
-  var _page = request_body.page;
-  var _region = request_body.region;
+router.get('/movie/date', function (req, res) {
+  const qs = req.query;
+  console.log(qs);
+  const date = qs.date;
   console.log(date);
+
+  const _page = qs.page;
+  const _region = qs.region;
 
   const KEY_MOVIE_DATE_REGION_DATE_PAGE = req.originalUrl;
 
@@ -235,7 +229,7 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
     } else {
       var options = {
         method: 'GET',
-        url: 'https://api.themoviedb.org/3/discover/movie',
+        url: _url + '/discover/movie',
         qs:
         {
           'primary_release_date.gte': date,
@@ -262,9 +256,15 @@ router.get('/movie/date/:region/:date/:page', function (req, res) {
 });
 
 var searchCompanies = function (req, res, next) {
-  var _query = req.params.query;
-  var _page = req.params.page;
-  var _region = req.params.region;
+  const qs = req.query;
+  console.log(qs);
+
+  const _query = qs.query;
+  const _page = qs.page;
+  const _region = qs.region;
+  console.log("request query : " + _query);
+  console.log("request page : " + _page);
+  console.log("request region : " + _region);
 
   const KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
 
@@ -302,9 +302,15 @@ var searchCompanies = function (req, res, next) {
 };
 
 var searchMovies = function (req, res, next) {
-  var _query = req.params.query;
-  var _page = req.params.page;
-  var _region = req.params.region;
+  const qs = req.query;
+  console.log(qs);
+
+  const _query = qs.query;
+  const _page = qs.page;
+  const _region = qs.region;
+  console.log("request query : " + _query);
+  console.log("request page : " + _page);
+  console.log("request region : " + _region);
 
   const KEY_SEARCH_MOVIE_REGION_QUERY_PAGE = req.originalUrl;
 
@@ -345,19 +351,9 @@ var searchMovies = function (req, res, next) {
   });
 };
 
-router.get('/search/multi/:region/:query/:page', searchCompanies, searchMovies, function (req, res) {
-  console.log(req.path);
-
-  var _query = req.params.query;
-  var _page = req.params.page;
-  var _region = req.params.region;
-  console.log("request query : " + _query);
-  console.log("request page : " + _page);
-  console.log("request region : " + _region);
-
-
-  var companies = req.companies;
-  var movies = req.movies;
+router.get('/search/multi', searchCompanies, searchMovies, function (req, res) {
+  const companies = req.companies;
+  const movies = req.movies;
 
   if (companies.total_results >= movies.total_results) {
     res.json({ "companies": true, "results": { "movies": movies, "companies": companies } });
@@ -367,36 +363,19 @@ router.get('/search/multi/:region/:query/:page', searchCompanies, searchMovies, 
   }
 });
 
-router.get('/search/company/:region/:query/:page', searchCompanies, function (req, res) {
-  console.log(req.path);
-
-  var _query = req.params.query;
-  var _page = req.params.page;
-  var _region = req.params.region;
-  console.log("request query : " + _query);
-  console.log("request page : " + _page);
-  console.log("request region : " + _region);
+router.get('/search/company', searchCompanies, function (req, res) {
   res.json(req.companies);
 });
 
-router.get('/search/movie/:region/:query/:page', searchMovies, function (req, res) {
-  console.log(req.path);
-
-  var _query = req.params.query;
-  var _page = req.params.page;
-  var _region = req.params.region;
-  console.log("request query : " + _query);
-  console.log("request page : " + _page);
-  console.log("request region : " + _region);
-  console.log(req.movies);
+router.get('/search/movie', searchMovies, function (req, res) {
   res.json(req.movies);
 });
 
-router.get('/movie/detail/:region/:id', (req, res) => {
-  console.log(req.path);
-
-  var id = req.params.id;
-  var _region = req.params.region;
+router.get('/movie/detail', (req, res) => {
+  const qs = req.query;
+  console.log(qs);
+  const id = qs.id;
+  const _region = qs.region;
 
   const KEY_MOVIE_DETAIL_REGION_ID = req.originalUrl;
 
@@ -413,7 +392,7 @@ router.get('/movie/detail/:region/:id', (req, res) => {
         {
           append_to_response: 'videos,images',
           language: 'ko-KR',
-          api_key: 'dacdeb969b934abef7e5002b69d6c9ae',
+          api_key: _api_key,
           region: _region
         }
       };
@@ -429,15 +408,16 @@ router.get('/movie/detail/:region/:id', (req, res) => {
   });
 });
 
-router.get('/movie/TMM/:region/:page', function (req, res) {
-  console.log(req.path);
-  var now = new Date();
-  var firstDate = new Date(now.getYear() + 1900, now.getMonth(), 1).yyyymmdd();
-  var lastDate = new Date(now.getYear() + 1900, now.getMonth() + 1, 0).yyyymmdd();
-  console.log(firstDate);
-  console.log(lastDate);
-  var _region = req.params.region;
-  var _page = req.params.page;
+router.get('/movie/TMM', function (req, res) {
+  const qs = req.query;
+  console.log(qs);
+  const now = new Date();
+  const firstDate = new Date(now.getYear() + 1900, now.getMonth(), 1).yyyymmdd();
+  const lastDate = new Date(now.getYear() + 1900, now.getMonth() + 1, 0).yyyymmdd();
+  console.log("first date : "+firstDate);
+  console.log("last date : "+lastDate);
+  const _region = qs.region;
+  const _page = qs.page;
 
   const KEY_MOVIE_TMM_REGION_PAGE = req.originalUrl;
 

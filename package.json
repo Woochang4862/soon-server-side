@@ -15,6 +15,7 @@
     "express": "~4.16.0",
     "express-session": "^1.17.0",
     "fcm-node": "^1.5.2",
+    "filereader": "^0.10.3",
     "firebase-admin": "^8.9.0",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
@@ -29,6 +30,7 @@
     "pm2": "^3.5.1",
     "redis": "^2.8.0",
     "request": "^2.88.0",
+    "resemblejs": "^3.2.4",
     "sync-request": "^6.0.0"
   }
 }

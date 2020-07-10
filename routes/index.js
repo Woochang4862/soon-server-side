@@ -591,7 +591,7 @@ router.post('/add/alarm/company', function (req, res) {
     }
   });
 });
-
+//asd
 router.post('/remove/alarm/company', function (req, res) {
   var options = {
     url: "https://iid.googleapis.com/iid/info/" + req.body.token,

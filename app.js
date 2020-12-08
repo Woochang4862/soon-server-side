@@ -4,8 +4,11 @@ var session  = require('express-session');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var genreRouter = require('./routes/genre');
+var movieRouter = require('./routes/movie');
+var searchRouter = require('./routes/search');
+var authRouter = require('./routes/auth');
+var alarmRouter = require('./routes/alarm');
 var messageRouter = require('./routes/message');
 var passport = require('passport');
 var flash = require('connect-flash');
@@ -31,8 +34,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-app.use('/api', indexRouter);
-app.use('/users', usersRouter);
+app.use('/api/genre', genreRouter);
+app.use('/api/movie', movieRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/search', searchRouter);
 app.use('/message', messageRouter);
 
 // catch 404 and forward to error handler

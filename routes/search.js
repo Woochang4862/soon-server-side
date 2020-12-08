@@ -1,6 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
+const request = require('request');
+const _url = 'https://api.themoviedb.org/3';
+const _api_key = require('../config/tmdb').api_key
+
+const redis = require('redis');
+const client = redis.createClient(6379);
+const caching_time = 300;
+client.on('error', (err) => {
+  console.log("Error " + err);
+});
 
 var searchCompanies = function (req, res, next) {
     const qs = req.query;
@@ -98,7 +108,7 @@ var searchCompanies = function (req, res, next) {
     });
   };
   
-  router.get('/search/multi', searchCompanies, searchMovies, function (req, res) {
+  router.get('/multi', searchCompanies, searchMovies, function (req, res) {
     const companies = req.companies;
     const movies = req.movies;
   
@@ -110,11 +120,11 @@ var searchCompanies = function (req, res, next) {
     }
   });
   
-  router.get('/search/company', searchCompanies, function (req, res) {
+  router.get('/company', searchCompanies, function (req, res) {
     res.json(req.companies);
   });
   
-  router.get('/search/movie', searchMovies, function (req, res) {
+  router.get('/movie', searchMovies, function (req, res) {
     res.json(req.movies);
   });
 

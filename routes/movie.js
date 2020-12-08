@@ -22,7 +22,7 @@ Date.prototype.yyyymmdd = function () {
     ].join('-');
 };
 
-router.get('/movie/TMM', function (req, res) {
+router.get('/TMM', function (req, res) {
     const qs = req.query;
     console.log(qs);
     const now = new Date();
@@ -82,7 +82,7 @@ router.get('/movie/TMM', function (req, res) {
     });
 });
 
-router.get('/movie/company', function (req, res) {
+router.get('/company', function (req, res) {
     const qs = req.query;
     console.log(qs);
     const currentDate = new Date().yyyymmdd();
@@ -128,7 +128,7 @@ router.get('/movie/company', function (req, res) {
     })
 });
 
-router.get('/movie/genre', function (req, res) {
+router.get('/genre', function (req, res) {
     const qs = req.query;
     console.log(qs);
     const currentDate = new Date().yyyymmdd();
@@ -175,10 +175,10 @@ router.get('/movie/genre', function (req, res) {
     });
 });
 
-router.get('/movie/date', function (req, res) {
+router.get('/date', function (req, res) {
     const qs = req.query;
     console.log(qs);
-    const date = qs.date;
+    const date = qs.date; // yyyy-MM-dd
     console.log(date);
 
     const _page = qs.page;
@@ -220,7 +220,7 @@ router.get('/movie/date', function (req, res) {
     });
 });
 
-router.get('/movie/detail', (req, res) => {
+router.get('/detail', (req, res) => {
     const qs = req.query;
     console.log(qs);
     const id = qs.id;

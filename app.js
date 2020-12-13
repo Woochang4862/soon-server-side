@@ -38,6 +38,7 @@ app.use('/api/genre', genreRouter);
 app.use('/api/movie', movieRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/search', searchRouter);
+app.use('/api/alarm',alarmRouter)
 app.use('/message', messageRouter);
 
 // catch 404 and forward to error handler

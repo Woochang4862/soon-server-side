@@ -3,7 +3,9 @@ var dbconfig = require('../config/database');
 
 var connection = mysql.createConnection(dbconfig.connection);
 
-connection.query('CREATE DATABASE ' + dbconfig.database);
+
+
+connection.query('CREATE DATABASE IF NOT EXISTS ' + dbconfig.database);
 
 connection.query('\
 CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.users_table + '` ( \
@@ -17,10 +19,9 @@ CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.users_table + '` ( \
 
 connection.query('\
 CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.company_alarm_table + '` ( \
-    `company_id` INT UNSIGNED NOT NULL, \
-        PRIMARY KEY (`company_id`), \
-    UNIQUE INDEX `company_id_UNIQUE` (`company_id` ASC), \
-    `member` INT UNSIGNED \
+    `id` INT UNSIGNED PRIMARY KEY AUTO_INCREMENT, \
+    `token` TEXT, \
+    `company_id` INT UNSIGNED NOT NULL \
 )');
 
 console.log('Success: Database Created!')

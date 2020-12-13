@@ -27,6 +27,28 @@ Date.prototype.yyyymmdd = function () {
   ].join('-');
 };
 
+router.get('/check/:token', function (req, res) {
+  var options = {
+    url: "https://iid.googleapis.com/iid/info/" + req.params.token,
+    headers: {
+      'Authorization': 'Key=' + serverKey
+    },
+    qs: {
+      details: true
+    }
+  };
+
+  request(options, function (err, response, body) {
+    if (err) errorFunc(res, '', err);
+    var json = JSON.parse(response.body);
+    console.log(json);
+    var keysOfTopics = json.rel.topics.keys;
+    res.json({
+      "topics": keysOfTopics
+    });
+  });
+});
+
 router.get('/check/:token/subscribe/:topic', function (req, res) {
   var options = {
     url: "https://iid.googleapis.com/iid/info/" + req.params.token,

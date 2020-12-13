@@ -42,7 +42,7 @@ router.get('/check/:token', function (req, res) {
     if (err) errorFunc(res, '', err);
     var json = JSON.parse(response.body);
     console.log(json);
-    var keysOfTopics = json.rel.topics.keys();
+    var keysOfTopics = Object.keys(json.rel.topics);
     res.json({
       "topics": keysOfTopics
     });

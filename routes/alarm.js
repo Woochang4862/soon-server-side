@@ -44,7 +44,7 @@ router.get('/check/:token', function (req, res) {
     console.log(json);
     var keysOfTopics = json.rel.topics.keys;
     res.json({
-      "topics": keysOfTopics
+      "topics": ['hi']
     });
   });
 });

@@ -36,6 +36,8 @@ router.get('/all', function (req, res) {
         qs: { language: 'ko-KR', api_key: _api_key }
       };
 
+      var genreImgs = Object();
+
       request(options, function (error, response, body) {
         if (error) throw new Error(error);
         console.log(body);

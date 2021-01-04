@@ -70,7 +70,6 @@ router.get('/all', function (req, res) {
             request(options, function (error, response, _body) {
               if (error) throw new Error(error);
               var body = JSON.parse(_body);
-              console.log(result["genres"][i].id, body["results"].length);
               if (body["results"].length != 0) {
                 for (let e of body["results"]) {
                   if (e.poster_path) { genreImgs[result["genres"][i].id] = e.poster_path; break; }

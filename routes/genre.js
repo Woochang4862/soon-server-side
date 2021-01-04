@@ -24,6 +24,7 @@ Date.prototype.yyyymmdd = function () {
 
 router.get('/all', function (req, res) {
   const KEY_GENRE_ALL = req.originalUrl;
+  console.log(KEY_GENRE_ALL);
   return client.get(KEY_GENRE_ALL, (err, data) => {
     if (data) {
       var data = JSON.parse(data);
@@ -69,6 +70,7 @@ router.get('/all', function (req, res) {
             request(options, function (error, response, _body) {
               if (error) throw new Error(error);
               var body = JSON.parse(_body);
+              
               if (body["results"].length != 0) {
                 for (let e of body["results"]) {
                   if (e.poster_path) { genreImgs[result["genres"][i].id] = e.poster_path; break; }

@@ -51,9 +51,9 @@ request(options, function (error, response, body) {
             request(options, function (error, response, _body) {
                 if (error) throw new Error(error);
                 var body = JSON.parse(_body);
+                console.log(result["genres"][i].id, body["results"]);
                 if (body["results"].length != 0) {
                     for (let e of body["results"]) {
-                        console.log(result["genres"][i].id,e.poster_path, e.backdrop_path);
                         if (e.poster_path) { genreImgs[result["genres"][i].id] = e.poster_path; break; }
                         if (e.backdrop_path) { genreImgs[result["genres"][i].id] = e.backdrop_path; break; }
                     }

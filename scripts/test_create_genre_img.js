@@ -23,13 +23,12 @@ var genreImgs = Object();
 
 request(options, function (error, response, body) {
     if (error) throw new Error(error);
-    console.log(body);
     var result = JSON.parse(body);
     const currentDate = new Date().yyyymmdd();
     var i = 0;
     async.whilst(
         function () {
-            i < result["genres"].length
+            return i < result["genres"].length;
         },
         function (next) {
             var options = {
@@ -37,7 +36,7 @@ request(options, function (error, response, body) {
                 url: _url + '/discover/movie',
                 qs:
                 {
-                    with_genres: result[i].id,
+                    with_genres: result["genres"][i].id,
                     'release_date.gte': currentDate,
                     page: 1,
                     include_video: 'false',
@@ -52,26 +51,27 @@ request(options, function (error, response, body) {
             request(options, function (error, response, _body) {
                 if (error) throw new Error(error);
                 var body = JSON.parse(_body);
-                if (body["results"]) {
-                    body["results"].forEach(e => {
-                        if(e.poster_path) genreImgs[result[i].id] = e.poster_path; break;
-                        if(e.backdrop_path) genreImgs[result[i].id] = e.backdrop_path; break;
-                    });
-                    if(!genreImgs[result[i].id]){
+                if (body["results"].length != 0) {
+                    for (let e of body["results"]) {
+                        console.log(result["genres"][i].id,e.poster_path, e.backdrop_path);
+                        if (e.poster_path) { genreImgs[result["genres"][i].id] = e.poster_path; break; }
+                        if (e.backdrop_path) { genreImgs[result["genres"][i].id] = e.backdrop_path; break; }
+                    }
+                    if (!genreImgs[result["genres"][i].id]) {
                         // 제공된 이미지가 없습니다
-                        genreImgs[result[i].id] = 0;
-                    }  
+                        genreImgs[result["genres"][i].id] = "제공된 이미지가 없습니다";
+                    }
                 } else {
                     // 상영예정인 영화가 없습니다
-                    genreImgs[result[i].id] = 0;
+                    genreImgs[result["genres"][i].id] = "상영예정인 영화가 없습니다";
                 }
                 i++;
                 next();
             });
         },
         function (err) {
-            if(err) console.log(new Error(err));
-            console.log(genreImgs);
+            if (err) console.log(new Error(err));
+            console.log('result: ', genreImgs);
         }
     )
 });

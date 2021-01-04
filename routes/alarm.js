@@ -4,12 +4,6 @@ const async = require("async");
 
 const request = require('request');
 const _api_key = require('../config/tmdb').api_key
-
-var admin = require('firebase-admin');
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  databaseURL: 'https://soon-79c2e.firebaseio.com'
-});
 const serverKey = 'AAAAI0G_Y0Q:APA91bGhn2kP760NOiIen0omFbsXL5Y2rjo8xXMruA3NOB7ejNBWIFW0QvUfVejexO_ZBMppGcoBEFK_1rWeuI2SD2pWWXCkxmPToCh8usIQx9W25krGRGekcbo2WOS27YmazEWQQNgF';
 
 const mysql = require('mysql');

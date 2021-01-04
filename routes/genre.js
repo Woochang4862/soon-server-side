@@ -71,7 +71,6 @@ router.get('/all', function (req, res) {
               var body = JSON.parse(_body);
               if (body["results"].length != 0) {
                 for (let e of body["results"]) {
-                  console.log(result["genres"][i].id, e.poster_path, e.backdrop_path);
                   if (e.poster_path) { genreImgs[result["genres"][i].id] = e.poster_path; break; }
                   if (e.backdrop_path) { genreImgs[result["genres"][i].id] = e.backdrop_path; break; }
                 }
@@ -89,9 +88,7 @@ router.get('/all', function (req, res) {
           },
           function (err) {
             if (err) console.log(new Error(err));
-            console.log('result: ', genreImgs);
             for (var i = 0; i < result["genres"].length; i++) {
-              console.log(genreImgs[result["genres"][i].id]);
               result["genres"][i]["icon_path"] = genreImgs[result["genres"][i].id];
             }
             result["source"] = 'api';

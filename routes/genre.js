@@ -3,6 +3,7 @@ const router = express.Router();
 const request = require('request');
 const redis = require('redis');
 const _api_key = require('../config/tmdb').api_key
+const async = require("async");
 
 const client = redis.createClient(6379);
 const caching_time = 300;

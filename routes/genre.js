@@ -91,7 +91,7 @@ router.get('/all', function (req, res) {
             if (err) console.log(new Error(err));
             console.log('result: ', genreImgs);
             for (var i = 0; i < result["genres"].length; i++) {
-              result["genres"][i]["icon_path"] = genreImgs[result["genres"][i]];
+              result["genres"][i]["icon_path"] = genreImgs[result["genres"][i].id];
             }
             result["source"] = 'api';
             client.setex(KEY_GENRE_ALL, caching_time, JSON.stringify(result));

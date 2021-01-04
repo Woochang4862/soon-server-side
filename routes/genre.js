@@ -91,6 +91,7 @@ router.get('/all', function (req, res) {
             if (err) console.log(new Error(err));
             console.log('result: ', genreImgs);
             for (var i = 0; i < result["genres"].length; i++) {
+              console.log(genreImgs[result["genres"][i].id]);
               result["genres"][i]["icon_path"] = genreImgs[result["genres"][i].id];
             }
             result["source"] = 'api';

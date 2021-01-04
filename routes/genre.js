@@ -24,6 +24,7 @@ Date.prototype.yyyymmdd = function () {
 
 router.get('/all', function (req, res) {
   const KEY_GENRE_ALL = req.originalUrl;
+  const _region = req.query.region;
   console.log(KEY_GENRE_ALL);
   return client.get(KEY_GENRE_ALL, (err, data) => {
     if (data) {
@@ -59,7 +60,7 @@ router.get('/all', function (req, res) {
                 page: 1,
                 include_video: 'false',
                 include_adult: 'false',
-                region: 'KR',
+                region: _region,
                 sort_by: 'popularity.desc',
                 language: 'ko-KR',
                 api_key: _api_key

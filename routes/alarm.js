@@ -11,11 +11,9 @@ var admin = require("firebase-admin");
 var serviceAccount = require("../public/soon-79c2e-firebase-adminsdk-h7o9r-dc2b66a1c8.json");
 
 admin.initializeApp({
-	  credential: admin.credential.cert(serviceAccount),
-	  databaseURL: "https://soon-79c2e.firebaseio.com"
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://soon-79c2e.firebaseio.com"
 });
-
-
 
 const mysql = require('mysql');
 const dbconfig = require('../config/database');

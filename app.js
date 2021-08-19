@@ -4,6 +4,7 @@ var session  = require('express-session');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+
 var genreRouter = require('./routes/genre');
 var movieRouter = require('./routes/movie');
 var searchRouter = require('./routes/search');

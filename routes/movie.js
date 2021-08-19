@@ -12,7 +12,7 @@ client.on('error', (err) => {
     console.log("Error " + err);
 });
 
-const availableRegions = require('./availableRegions');
+const availableRegions = require('./availableRegions').availableRegions;
 
 Date.prototype.yyyymmdd = function () {
     var mm = this.getMonth() + 1;

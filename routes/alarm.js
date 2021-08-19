@@ -6,6 +6,17 @@ const request = require('request');
 const _api_key = require('../config/tmdb').api_key
 const serverKey = 'AAAAI0G_Y0Q:APA91bGhn2kP760NOiIen0omFbsXL5Y2rjo8xXMruA3NOB7ejNBWIFW0QvUfVejexO_ZBMppGcoBEFK_1rWeuI2SD2pWWXCkxmPToCh8usIQx9W25krGRGekcbo2WOS27YmazEWQQNgF';
 
+var admin = require("firebase-admin");
+
+var serviceAccount = require("../public/soon-79c2e-firebase-adminsdk-h7o9r-dc2b66a1c8.json");
+
+admin.initializeApp({
+	  credential: admin.credential.cert(serviceAccount),
+	  databaseURL: "https://soon-79c2e.firebaseio.com"
+});
+
+
+
 const mysql = require('mysql');
 const dbconfig = require('../config/database');
 const connection = mysql.createConnection(dbconfig.connection);

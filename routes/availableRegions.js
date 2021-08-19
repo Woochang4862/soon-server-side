@@ -1,0 +1,1 @@
+const availableRegions = ["AR", "AT", "AU", "BE", "BR", "CA", "CH", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "HU", "ID", "IE", "IN", "IT", "JP", "KR", "LT", "MX", "NL", "NO", "NZ", "PH", "PL", "PT", "RU", "SE", "TR", "US", "ZA"]

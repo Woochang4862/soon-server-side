@@ -296,7 +296,7 @@ router.get('/watch/providers', (req, res) => {
             }
         });
     } else {
-        return res.statusCode(400) //BAD REQUEST! : 올바르지 못한 리전 코드
+        return res.status(400) //BAD REQUEST! : 올바르지 못한 리전 코드
     }
 });
 

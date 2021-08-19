@@ -257,4 +257,114 @@ router.get('/detail', (req, res) => {
     });
 });
 
+router.get('/watch/providers', (req, res) => {
+    const qs = req.query;
+    console.log(qs);
+    const id = qs.id;
+    const _region = qs.region;
+
+    const KEY_MOVIE_WATCH_PROVIDERS_REGION_ID = req.originalUrl;
+
+    return client.get(KEY_MOVIE_WATCH_PROVIDERS_REGION_ID, (err, data) => {
+        if (data) {
+            var data = JSON.parse(data);
+            data["source"] = 'cache';
+            return res.json(data);
+        } else {
+            var options = {
+                method: 'GET',
+                url: _url + '/movie/' + id + '/watch/providers',
+                qs:
+                {
+                    api_key: _api_key
+                }
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+                var body = JSON.parse(body);
+                body["source"] = 'api';
+                var data = body["results"][_region];
+                body["results"] = data
+                client.setex(KEY_MOVIE_WATCH_PROVIDERS_REGION_ID, caching_time, JSON.stringify(body));
+                return res.json(body);
+            });
+        }
+    });
+});
+
+router.get('/credits', (req, res) => {
+    const qs = req.query;
+    console.log(qs);
+    const id = qs.id;
+    const _region = qs.region;
+
+    const KEY_MOVIE_CREDITS_REGION_ID = req.originalUrl;
+
+    return client.get(KEY_MOVIE_CREDITS_REGION_ID, (err, data) => {
+        if (data) {
+            var data = JSON.parse(data);
+            data["source"] = 'cache';
+            return res.json(data);
+        } else {
+            var options = {
+                method: 'GET',
+                url: _url + '/movie/' + id + '/credits',
+                qs:
+                {
+                    language: 'ko-KR',
+                    api_key: _api_key
+                }
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error);
+                var body = JSON.parse(body);
+                body["source"] = 'api';
+                client.setex(KEY_MOVIE_CREDITS_REGION_ID, caching_time, JSON.stringify(body));
+                return res.json(body);
+            });
+        }
+    });
+});
+
+router.get('/similar', function (req, res) {
+    const qs = req.query;
+    console.log(qs);
+
+    const id = qs.id;
+    const _page = qs.page;
+    const _region = qs.region;
+
+    const KEY_MOVIE_SIMILAR_ID_PAGE = req.originalUrl;
+
+    return client.get(KEY_MOVIE_SIMILAR_ID_PAGE, (err, data) => {
+        if (data) {
+            var data = JSON.parse(data);
+            data["source"] = 'cache';
+            return res.json(data);
+        } else {
+            var options = {
+                method: 'GET',
+                url: _url + '/movie/' + id + '/similar',
+                qs:
+                {
+                    page: _page,
+                    language: 'ko-KR',
+                    api_key: _api_key
+                }
+            };
+
+            request(options, function (error, response, _body) {
+                if (error) throw new Error(error);
+                var body = JSON.parse(_body);
+
+                body["source"] = 'api';
+                client.setex(KEY_MOVIE_SIMILAR_ID_PAGE, caching_time, JSON.stringify(body));
+                return res.json(body);
+            });
+        }
+    });
+});
+
 module.exports = router;

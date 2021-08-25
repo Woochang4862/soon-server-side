@@ -289,8 +289,12 @@ router.get('/watch/providers', (req, res) => {
                     var body = JSON.parse(body);
                     var id = body["id"];
                     var data = body["results"][_region];
-                    body = data
-                    body["id"] = id
+                    if(data){
+                        body = data
+                        body["id"] = id
+                    } else {
+                        body = {id}
+                    }
                     body["source"] = 'api';
                     client.setex(KEY_MOVIE_WATCH_PROVIDERS_REGION_ID, caching_time, JSON.stringify(body));
                     return res.json(body);

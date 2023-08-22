@@ -1,5 +1,5 @@
 const FCM = require('fcm-node');
-const serverKey = 'AAAAI0G_Y0Q:APA91bGhn2kP760NOiIen0omFbsXL5Y2rjo8xXMruA3NOB7ejNBWIFW0QvUfVejexO_ZBMppGcoBEFK_1rWeuI2SD2pWWXCkxmPToCh8usIQx9W25krGRGekcbo2WOS27YmazEWQQNgF';
+const serverKey = require('../config/firebase').api_key;
 const fcm = new FCM(serverKey);
 const request = require('request');
 const _api_key = require('../config/tmdb').api_key

@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const FCM = require('fcm-node');
-const serverKey = 'AAAAI0G_Y0Q:APA91bGhn2kP760NOiIen0omFbsXL5Y2rjo8xXMruA3NOB7ejNBWIFW0QvUfVejexO_ZBMppGcoBEFK_1rWeuI2SD2pWWXCkxmPToCh8usIQx9W25krGRGekcbo2WOS27YmazEWQQNgF';
+const serverKey = require('../config/firebase').api_key;
 const fcm = new FCM(serverKey);
 const mysql = require('mysql');
 const dbconfig = require('../config/database');
@@ -15,7 +15,7 @@ admin.initializeApp({
 
 connection.query('USE ' + dbconfig.database);
 
-const _api_key = 'dacdeb969b934abef7e5002b69d6c9ae';
+const _api_key = require('../config/tmdb').api_key;
 const _url = 'https://api.themoviedb.org/3';
 
 Date.prototype.yyyymmdd = function () {
@@ -137,13 +137,14 @@ cron.schedule('* * * * *', function () {
         });
     }, function (err) {
       if (err) throw err;
-      console.log("Complete!");
+      console.log("Calculate Difference of Movie Tables : Complete!");
     });
   });
 }).start();
 
 cron.schedule('* * * * *', function () {
-  connection.query('SELECT MIN(id), token FROM company_alarm GROUP BY token', function (err, rows) {
+  connection.query('SELECT token FROM '+ dbconfig.company_alarm_table+' GROUP BY token', function (err, rows) {
+    if(err) throw err;
     var i = 0;
     async.whilst(
       function () {

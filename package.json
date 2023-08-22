@@ -3,34 +3,29 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "pm2 start ./bin/www ./routes/jobs.js",
+    "restart": "pm2 restart www jobs",
+    "stop": "pm2 stop www jobs"
   },
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "async": "^3.2.4",
     "bluebird": "^3.5.3",
     "connect-flash": "^0.1.1",
     "cookie-parser": "~1.4.3",
     "cron": "^1.7.2",
     "debug": "~2.6.9",
+    "dotenv": "^16.3.1",
     "express": "~4.16.0",
     "express-session": "^1.17.0",
     "fcm-node": "^1.5.2",
     "filereader": "^0.10.3",
     "firebase-admin": "^8.13.0",
     "http-errors": "~1.6.2",
-    "jade": "~1.11.0",
     "morgan": "~1.9.0",
     "mysql": "^2.17.1",
     "node-cron": "^2.0.3",
-    "nodemon": "^1.19.1",
-    "package": "^1.0.1",
-    "package.json": "^2.0.1",
-    "passport": "^0.4.0",
-    "passport-local": "^1.0.0",
-    "pm2": "^3.5.2",
     "redis": "^2.8.0",
     "request": "^2.88.0",
-    "resemblejs": "^3.2.4",
     "sync-request": "^6.0.0"
   }
 }

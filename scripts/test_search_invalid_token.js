@@ -3,7 +3,7 @@ const dbconfig = require('../config/database');
 const connection = mysql.createConnection(dbconfig.connection);
 connection.query('USE ' + dbconfig.database);
 const request = require('request');
-const serverKey = 'AAAAI0G_Y0Q:APA91bGhn2kP760NOiIen0omFbsXL5Y2rjo8xXMruA3NOB7ejNBWIFW0QvUfVejexO_ZBMppGcoBEFK_1rWeuI2SD2pWWXCkxmPToCh8usIQx9W25krGRGekcbo2WOS27YmazEWQQNgF';
+const serverKey = require('../conifg/firebase').api_key;
 const async = require("async");
 var admin = require('firebase-admin');
 admin.initializeApp({

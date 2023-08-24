@@ -8,6 +8,9 @@ var app = require('../app');
 var debug = require('debug')('soon-server-side:server');
 var http = require('http');
 
+const createTable = require('../config/create_db.js');
+createTable()
+
 /**
  * Get port from environment and store in Express.
  */

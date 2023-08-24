@@ -14,7 +14,7 @@ admin.initializeApp({
   databaseURL: "https://soon-79c2e.firebaseio.com"
 });
 
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const dbconfig = require('../config/database');
 const connection = mysql.createConnection(dbconfig.connection);
 connection.query('USE ' + dbconfig.database);
@@ -87,7 +87,7 @@ router.post('/add/alarm/company', function (req, res) {
             if (err) errorFunc(res, '', err);
             if (!(row && row.length)) {
               // Create table of company_id
-              connection.query("CREATE TABLE `" + req.body.company_id + "` (movie_id INT UNSIGNED PRIMARY KEY)", function (err, result) {
+              connection.query("CREATE TABLE IF NOT EXISTS `" + req.body.company_id + "` (movie_id INT UNSIGNED PRIMARY KEY)", function (err, result) {
                 if (err) errorFunc(res, '', err);
                 console.log("Table created");
                 let oldPage = 1;
@@ -138,14 +138,14 @@ router.post('/add/alarm/company', function (req, res) {
                       connection.query("INSERT INTO `" + req.body.company_id + "` (movie_id) VALUES ?", [movie_id_array], function (err, result) {
                         if (err) errorFunc(res, '', err);
                         console.log("Number of records inserted: " + result.affectedRows);
-                        var insertQuery = "INSERT INTO `" + dbconfig.company_alarm_table + "` (token ,company_id) values (?,?)";
+                        var insertQuery = "INSERT IGNORE INTO `" + dbconfig.company_alarm_table + "` (token ,company_id) values (?,?)";
                         connection.query(insertQuery, [req.body.token, req.body.company_id], function (err, rows) {
                           if (err) errorFunc(res, '', err)
                           return res.sendStatus(200);
                         });
                       });
                     } else {
-                      var insertQuery = "INSERT INTO `" + dbconfig.company_alarm_table + "` (token ,company_id) values (?,?)";
+                      var insertQuery = "INSERT IGNORE INTO `" + dbconfig.company_alarm_table + "` (token ,company_id) values (?,?)";
                       connection.query(insertQuery, [req.body.token, req.body.company_id], function (err, rows) {
                         if (err) errorFunc(res, '', err)
                         return res.sendStatus(200);
@@ -154,7 +154,7 @@ router.post('/add/alarm/company', function (req, res) {
                   });
               });
             } else {
-              var insertQuery = "INSERT INTO `" + dbconfig.company_alarm_table + "` (token ,company_id) values (?,?)";
+              var insertQuery = "INSERT IGNORE INTO `" + dbconfig.company_alarm_table + "` (token ,company_id) values (?,?)";
               connection.query(insertQuery, [req.body.token, req.body.company_id], function (err, rows) {
                 if (err) errorFunc(res, '', err)
                 return res.sendStatus(200);
@@ -179,6 +179,7 @@ function removeCompanyAlarm(req, res, token, topic) {
     if (row && row.length) {
       admin.messaging().unsubscribeFromTopic(token, '/topics/' + topic)
         .then(function (response) {
+	  console.log(response);
           var deleteSql = 'DELETE FROM ' + dbconfig.company_alarm_table + ' WHERE token = ? AND company_id = ?';
           connection.query(deleteSql, [token, topic], function (err, result) {
             if (err) throw err;
@@ -187,7 +188,7 @@ function removeCompanyAlarm(req, res, token, topic) {
               if (err) throw err;
               if (row[0].membersCount <= 0) {
                 //DROP TABLE
-                var dropSql = "DROP TABLE `" + topic + "`"
+                var dropSql = "DROP TABLE IF EXISTS `" + topic + "`"
                 connection.query(dropSql, function (err, result) {
                   if (err) errorFunc(res, '', err);
                   return res.sendStatus(200);

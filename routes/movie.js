@@ -6,7 +6,10 @@ const _url = 'https://api.themoviedb.org/3';
 const _api_key = require('../config/tmdb').api_key
 
 const redis = require('redis');
-const client = redis.createClient(6379);
+const client = redis.createClient({
+    port: 6379,
+    host: 'redis'
+});
 const caching_time = 300;
 client.on('error', (err) => {
     console.log("Error " + err);

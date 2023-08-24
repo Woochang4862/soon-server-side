@@ -1,0 +1,29 @@
+version: '3.5'
+
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: alarm_db
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    volumes:
+      - ./data/redis:/data
+
+  node-app:
+    build: .
+    volumes:
+      - ./:/soon-server-side
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      REDIS_HOST: redis
+      MYSQL_HOST: mysql
+    ports:
+      - "3000:3000"
+

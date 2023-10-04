@@ -1,22 +1,19 @@
-const cron = require('node-cron');
-const FCM = require('fcm-node');
-const serverKey = require('../config/firebase').api_key;
-const fcm = new FCM(serverKey);
-const mysql = require('mysql2');
-const dbconfig = require('../config/database');
-const connection = mysql.createConnection(dbconfig.connection);
-const async = require("async");
-const request = require('request');
-var admin = require('firebase-admin');
+import cron from 'node-cron';
+import serverKey from '../config/firebase.js';
+import mysql from 'mysql2/promise';
+import dbconfig from '../config/database.js';
+import serviceAccount from '../public/soon-79c2e-firebase-adminsdk-h7o9r-dc2b66a1c8.json' assert {type: 'json'};
+import api_key from '../config/tmdb.js';
+import admin from 'firebase-admin';
+
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
+  credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://soon-79c2e.firebaseio.com'
 });
+//const fcm = new FCM(serverKey);
+const connection = mysql.createConnection(dbconfig.connection);
 
-connection.query('USE ' + dbconfig.database);
-
-const _api_key = require('../config/tmdb').api_key;
-const _url = 'https://api.themoviedb.org/3';
+const baseUrl = 'https://api.themoviedb.org/3';
 
 Date.prototype.yyyymmdd = function () {
   var mm = this.getMonth() + 1;
@@ -28,123 +25,104 @@ Date.prototype.yyyymmdd = function () {
   ].join('-');
 };
 
-cron.schedule('* * * * *', function () {
-  connection.query("SELECT * FROM " + dbconfig.company_alarm_table, function (err, rows, fields) {
-    if (err) throw err;
-    let i = 0;
-    let row;
-    async.whilst(function () {
-      return i < rows.length;
-    }, function (next) {
-      console.log("index of rows : " + i);
-      row = rows[i];
-      let oldPage = 1;
+/**
+ * 제작사 테이블 변경사항 체크
+ * 현재 있는 제작사 테이블에 대해서
+ *  테이블 내 제작사 id 와 api 서버 내 제작사 id 를 비교
+ */
+cron.schedule('* * * * *', async function () {
+  let startTime = Date.now();
+  const connection = await mysql.createConnection(dbconfig.connection);
+  let response;
+  try {
+    response = await connection.query("SELECT * FROM " + dbconfig.company_alarm_table);
+    console.log("response: " + JSON.stringify(response));
+
+    response = await connection.query("SELECT table_name FROM Information_schema.tables WHERE table_schema = '" + dbconfig.connection.database + "' AND table_name <> '" + dbconfig.company_alarm_table + "'");
+    console.log("response: " + JSON.stringify(response)); // [[{"TABLE_NAME":"420"}],[...]]
+    let [rows] = response;
+    for (let { TABLE_NAME } of rows) { // 대소문자 중요 table_name (x)
+      response = await connection.beginTransaction();
+      console.log("response: " + JSON.stringify(response));
+
+      let currentPage = 1;
       let nextPage = 2;
-      let tmp = new Array();
-      async.whilst(function () {
-        // Check that oldPage is less than newPage
-        return oldPage < nextPage;
-      },
-        function (next) {
-          var options = {
-            method: 'GET',
-            url: 'https://api.themoviedb.org/3/discover/movie',
-            qs:
-            {
-              with_companies: row.company_id,
-              'release_date.gte': new Date().yyyymmdd(),
-              page: oldPage,
-              include_video: 'false',
-              region: 'US',
-              include_adult: 'true',
-              sort_by: 'popularity.desc',
-              language: 'ko-KR',
-              api_key: _api_key
-            }
-          };
+      let movie_id_array_from_api = new Array();
 
-          request(options, function (err, response, body) {
-            if (err) throw err;
-            if (response.statusCode == 200) {
-              json = JSON.parse(body);
-              console.log("current page : " + oldPage);
-              json.results.forEach(result => {
-                tmp.push([result.id]);
-              });
-            }
-            if (json.results.length) {
-              // When the json has no more data loaded, nextPage will stop 
-              // incrementing hence become equal to oldPage and return 
-              // false in the test function.
-              nextPage++;
-            }
-            oldPage++;
-            next();
-          });
-        },
-        function (err) {
-          // All things are done!
-          if (err) throw err;
-          let movie_id_array = new Array();
-          connection.query("SELECT * FROM `" + row.company_id + "`", function (err, rows, fields) {
-            if (err) throw err;
-            rows.forEach(row => {
-              movie_id_array.push([row.movie_id]);
-            });
-            console.log(hasDiff(tmp, movie_id_array));
-            if (hasDiff(tmp, movie_id_array)) {
-              var options = {
-                url: "https://api.themoviedb.org/3/company/" + row.company_id,
-                qs: {
-                  api_key: _api_key
-                }
-              }
-              request(options, function (err, response, body) {
-                if (err) throw err;
-                var message = {
-                  to: '/topics/' + row.company_id,
-
-                  notification: {
-                    title: 'Soon',
-                    body: JSON.parse(body).name + "에 새로운 영화가 등록되었습니다."
-                  }
-                };
-
-                fcm.send(message, function (err, response) {
-                  if (err) {
-                    console.log("Something has gone wrong!");
-                  } else {
-                    console.log("Successfully sent with response: ", response);
-                  }
-                  connection.query("DELETE FROM `" + row.company_id + "`", function (err, result) {
-                    if (err) throw err;
-                    console.log("Number of records deleted: " + result.affectedRows);
-                    connection.query("INSERT INTO `" + row.company_id + "` (movie_id) VALUES ?", [tmp], function (err, result) {
-                      if (err) throw err;
-                      console.log("Number of records inserted: " + result.affectedRows);
-                      i++;
-                      next();
-                    });
-                  });
-                });
-              });
-            }
-            else {
-              i++;
-              next();
-            }
-          });
+      while (currentPage < nextPage) {
+        const url = baseUrl + '/discover/movie?' + new URLSearchParams({
+          with_companies: TABLE_NAME,
+          'release_date.gte': new Date().yyyymmdd(),
+          page: currentPage,
+          include_video: 'false',
+          region: 'US',
+          include_adult: 'false',
+          sort_by: 'popularity.desc',
+          language: 'ko-KR',
+          api_key
         });
-    }, function (err) {
-      if (err) throw err;
-      console.log("Calculate Difference of Movie Tables : Complete!");
-    });
-  });
+        const response = await fetch(url);
+        const data = await response.json();
+
+        movie_id_array_from_api = movie_id_array_from_api.concat(data.results.map(function (result) {
+          return result.id
+        }));
+
+        if (data.total_pages > currentPage) {
+          nextPage++;
+        }
+        currentPage++;
+      }
+      console.log('movie_id_array: ' + JSON.stringify(movie_id_array_from_api));
+
+      response = await connection.query("SELECT movie_id FROM `" + TABLE_NAME + "`");
+      console.log("response: " + JSON.stringify(response)); //[[{"movie_id":533535},{"movie_id":609681},{"movie_id":617126},{"movie_id":617127},{"movie_id":822119},{"movie_id":986056},{"movie_id":1003596},{"movie_id":1003598},{"movie_id":1165487},{"movie_id":1165500}],[{"_buf":{"type":"Buffer","data":[1,0,0,1,1,52,0,0,2,3,100,101,102,8,97,108,97,114,109,95,100,98,3,52,50,48,3,52,50,48,8,109,111,118,105,101,95,105,100,8,109,111,118,105,101,95,105,100,12,63,0,10,0,0,0,3,35,80,0,0,0,5,0,0,3,254,0,0,3,0,7,0,0,4,6,53,51,51,53,51,53,7,0,0,5,6,54,48,57,54,56,49,7,0,0,6,6,54,49,55,49,50,54,7,0,0,7,6,54,49,55,49,50,55,7,0,0,8,6,56,50,50,49,49,57,7,0,0,9,6,57,56,54,48,53,54,8,0,0,10,7,49,48,48,51,53,57,54,8,0,0,11,7,49,48,48,51,53,57,56,8,0,0,12,7,49,49,54,53,52,56,55,8,0,0,13,7,49,49,54,53,53,48,48,5,0,0,14,254,0,0,3,0]},"_clientEncoding":"utf8","_catalogLength":3,"_catalogStart":10,"_schemaLength":8,"_schemaStart":14,"_tableLength":3,"_tableStart":23,"_orgTableLength":3,"_orgTableStart":27,"_orgNameLength":8,"_orgNameStart":40,"characterSet":63,"encoding":"binary","name":"movie_id","columnLength":10,"columnType":3,"type":3,"flags":20515,"decimals":0}]]
+      let movie_id_array_from_table = response[0].map(function (e) {
+        return e.movie_id
+      });
+
+      if (hasDiff(movie_id_array_from_table, movie_id_array_from_api)) {
+        response = await fetch(baseUrl + "/company/" + TABLE_NAME+"?" + new URLSearchParams({
+          api_key
+        }));
+        let company = await response.json();
+        let message = {
+          topic: TABLE_NAME,
+          data: {
+            company:JSON.stringify(company),
+            title: 'Soon',
+            body: company.name + "의 영화 리스트가 수정되었습니다."
+          }
+        };
+        response = await admin.messaging().send(message);
+        console.log("response: " + JSON.stringify(response));
+
+        movie_id_array_from_api = movie_id_array_from_api.map(function (e) {
+          return [e];
+        });
+
+        response = await connection.query(`DELETE FROM \`${TABLE_NAME}\``);
+        console.log("response: " + JSON.stringify(response));
+
+        response = await connection.query(`INSERT INTO \`${TABLE_NAME}\` (movie_id) VALUES ?`, [movie_id_array_from_api]);
+        console.log("response: " + JSON.stringify(response));
+
+        response = await connection.commit();
+        console.log("response: " + JSON.stringify(response));
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    response = await connection.rollback();
+    console.log("response: " + JSON.stringify(response));
+  }
+  console.log(`Calculate Difference of Movie Tables : Complete! (Excutation Time:${Date.now() - startTime}ms)`);
+
 }).start();
 
 cron.schedule('* * * * *', function () {
-  connection.query('SELECT token FROM '+ dbconfig.company_alarm_table+' GROUP BY token', function (err, rows) {
-    if(err) throw err;
+  connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token', function (err, rows) {
+    if (err) throw err;
     var i = 0;
     async.whilst(
       function () {
@@ -224,6 +202,13 @@ cron.schedule('* * * * *', function () {
   });
 }).start();
 
+/**
+ * 만약 차이가 있을 시 1 이상의 값이 
+ * 없을시 0이 반환된다.
+ * @param {Array} a1 비교할 어레이 1
+ * @param {Array} a2 비교할 어레이 2
+ * @returns 합집합에서 교집합을 뺐을 때 집합의 원소 개수
+ */
 function hasDiff(a1, a2) {
   var a = [], diff = [];
 

@@ -1,16 +1,19 @@
-var createError = require('http-errors');
-var express = require('express');
-var session  = require('express-session');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+import createError from 'http-errors';
+import express from 'express';
+import session  from 'express-session';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
 
-var genreRouter = require('./routes/genre');
-var movieRouter = require('./routes/movie');
-var searchRouter = require('./routes/search');
-var alarmRouter = require('./routes/alarm');
-var messageRouter = require('./routes/message');
+import genreRouter from './routes/genre.js';
+import movieRouter from './routes/movie.js';
+import searchRouter from './routes/search.js';
+import alarmRouter from './routes/alarm.js';
+import messageRouter from './routes/message.js';
+
 var app = express();
+
+const __dirname = path.resolve();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -26,7 +29,7 @@ app.use('/message', messageRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+  res.sendStatus(404);
 });
 
 // error handler
@@ -36,8 +39,7 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  res.sendStatus(err.status || 500);
 });
 
-module.exports = app;
+export default app;

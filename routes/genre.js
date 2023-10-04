@@ -1,19 +1,21 @@
-const express = require('express');
-const router = express.Router();
-const request = require('request');
-const redis = require('redis');
-const _api_key = require('../config/tmdb').api_key
-const async = require("async");
+import express from 'express';
+import redis from 'redis';
+import api_key from '../config/tmdb.js';
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
 
+dotenv.config()
+
+const router = express.Router();
 const client = redis.createClient({
-    port: 6379,
-    host: 'redis'
+  url:`redis://${process.env.REDIS_HOST}:6379`
 });
+await client.connect();
 const caching_time = 300;
 client.on('error', (err) => {
   console.log("Error " + err);
 });
-const _url = 'https://api.themoviedb.org/3';
+const url = 'https://api.themoviedb.org/3';
 
 Date.prototype.yyyymmdd = function () {
   var mm = this.getMonth() + 1;
@@ -25,84 +27,63 @@ Date.prototype.yyyymmdd = function () {
   ].join('-');
 };
 
-router.get('/all', function (req, res) {
+router.get('/all', async function (req, res) {
   const KEY_GENRE_ALL = req.originalUrl;
-  const _region = req.query.region;
+  const region = req.query.region;
   console.log(KEY_GENRE_ALL);
-  return client.get(KEY_GENRE_ALL, (err, data) => {
-    if (data) {
-      var data = JSON.parse(data);
-      data["source"] = 'cache';
-      return res.json(data)
-    } else {
-      var options = {
-        method: 'GET',
-        url: _url + '/genre/movie/list',
-        qs: { language: 'ko-KR', api_key: _api_key }
-      };
+  let cached = await client.get(KEY_GENRE_ALL);
+  let data;
+  if (cached) {
+    data = JSON.parse(cached);
+    data["source"] = 'cache';
+  } else {
+    let response;
+    try {
+      response = await fetch(url + '/genre/movie/list?' + new URLSearchParams({
+        language: 'ko-KR', api_key
+      }));
+      data = await response.json();
 
-      var genreImgs = Object();
+      let i = 0;
+      const currentDate = new Date().yyyymmdd();
 
-      request(options, function (error, response, body) {
-        if (error) throw new Error(error);
-        var result = JSON.parse(body);
-        const currentDate = new Date().yyyymmdd();
-        var i = 0;
-        async.whilst(
-          function () {
-            return i < result["genres"].length;
-          },
-          function (next) {
-            var options = {
-              method: 'GET',
-              url: _url + '/discover/movie',
-              qs:
-              {
-                with_genres: result["genres"][i].id,
-                'release_date.gte': currentDate,
-                page: 1,
-                include_video: 'false',
-                include_adult: 'false',
-                region: _region,
-                sort_by: 'popularity.desc',
-                language: 'ko-KR',
-                api_key: _api_key
-              }
-            };
-
-            request(options, function (error, response, _body) {
-              if (error) throw new Error(error);
-              var body = JSON.parse(_body);
-              if (body["results"].length != 0) {
-                for (let e of body["results"]) {
-                  if (e.poster_path) { genreImgs[result["genres"][i].id] = e.poster_path; break; }
-                  if (e.backdrop_path) { genreImgs[result["genres"][i].id] = e.backdrop_path; break; }
-                }
-                if (!genreImgs[result["genres"][i].id]) {
-                  // 제공된 이미지가 없습니다
-                  genreImgs[result["genres"][i].id] = "제공된 이미지가 없습니다";
-                }
-              } else {
-                // 상영예정인 영화가 없습니다
-                genreImgs[result["genres"][i].id] = "상영예정인 영화가 없습니다";
-              }
-              i++;
-              next();
-            });
-          },
-          function (err) {
-            if (err) console.log(new Error(err));
-            for (var i = 0; i < result["genres"].length; i++) {
-              result["genres"][i]["icon_path"] = genreImgs[result["genres"][i].id];
-            }
-            result["source"] = 'api';
-            client.setex(KEY_GENRE_ALL, caching_time, JSON.stringify(result));
-            return res.json(result);
+      while (i < data.genres.length) {
+        response = await fetch(url + '/discover/movie?' + new URLSearchParams({
+          with_genres: data.genres[i].id,
+          'release_date.gte': currentDate,
+          page: 1,
+          include_video: 'false',
+          include_adult: 'false',
+          region,
+          sort_by: 'popularity.desc',
+          language: 'ko-KR',
+          api_key
+        }));
+        let { results } = await response.json();
+        if (results.length != 0) {
+          for (let result of results) {
+            if (result.poster_path) { data.genres[i]["icon_path"] = result.poster_path; break; }
+            if (result.backdrop_path) { data.genres[i]["icon_path"] = result.backdrop_path; break; }
           }
-        );
-      });
+          if (!data.genres[i]["icon_path"]) {
+            // 제공된 이미지가 없습니다
+            data.genres[i]["icon_path"] = "제공된 이미지가 없습니다";
+          }
+        } else {
+          // 상영예정인 영화가 없습니다
+          data.genres[i]["icon_path"] = "상영예정인 영화가 없습니다";
+        }
+        i++;
+      }
+
+      data["source"] = 'api';
+      await client.setEx(KEY_GENRE_ALL, caching_time, JSON.stringify(data));
+    } catch (error) {
+      console.log(error);
+      return res.sendStatus(500);
     }
-  });
+  }
+  return res.status(200).json(data);
 });
 
-module.exports = router;
+export default router;

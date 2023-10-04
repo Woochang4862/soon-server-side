@@ -3,13 +3,15 @@
 /**
  * Module dependencies.
  */
+import app from '../app.js';
+import debug from 'debug';
+const debugLogger = debug('soon-server-side:server');
+import http from 'http';
 
-var app = require('../app');
-var debug = require('debug')('soon-server-side:server');
-var http = require('http');
-
-const createTable = require('../config/create_db.js');
-createTable()
+import {createTable} from '../utils/create_db.js';
+createTable().then(function () {
+  console.log("Database Setup Completation!");
+});
 
 /**
  * Get port from environment and store in Express.
@@ -89,5 +91,5 @@ function onListening() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+    debugLogger('Listening on ' + bind);
 }

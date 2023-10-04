@@ -1,5 +1,4 @@
-require('dotenv').config();
+import {config} from 'dotenv';
+config();
 
-module.exports = {
-        api_key:process.env.TMDB_API_KEY
-};
+export default process.env.TMDB_API_KEY;

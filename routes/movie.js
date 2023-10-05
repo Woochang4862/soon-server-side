@@ -234,9 +234,10 @@ router.get('/detail', async (req, res) => {
                 api_key,
                 region
             });
+            console.log(tmp);
             response = await fetch(tmp);
             data = await response.json();
-
+            console.log(data);
             if(data.success){
                 data.source = 'api';
                 client.setEx(KEY_MOVIE_DETAIL_REGION_ID, caching_time, JSON.stringify(data));

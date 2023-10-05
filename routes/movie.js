@@ -228,12 +228,13 @@ router.get('/detail', async (req, res) => {
     } else {
         let response;
         try {
-            response = await fetch(url + '/movie/' + id+"?" + new URLSearchParams({
+            let tmp = url + '/movie/' + id+"?" + new URLSearchParams({
                 append_to_response: 'videos,images',
                 language: 'ko-KR',
                 api_key,
                 region
-            }));
+            });
+            response = await fetch(tmp);
             data = await response.json();
 
             if(data.success){

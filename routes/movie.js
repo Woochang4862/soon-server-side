@@ -238,11 +238,12 @@ router.get('/detail', async (req, res) => {
             response = await fetch(tmp);
             data = await response.json();
             console.log(data);
-            if(!"success" in data){
+            console.log(Boolean(data.success));
+            if(data.success){
+                throw new Error(data.status_message);
+            } else {
                 data.source = 'api';
                 client.setEx(KEY_MOVIE_DETAIL_REGION_ID, caching_time, JSON.stringify(data));
-            } else {
-                throw new Error(data.status_message)
             }
         } catch (error) {
             console.log(error);

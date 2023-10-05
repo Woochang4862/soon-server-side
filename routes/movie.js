@@ -96,6 +96,7 @@ router.get('/company', async function (req, res) {
     const KEY_MOVIE_COMPANY_REGION_ID_PAGE = req.originalUrl;
 
     let cached = await client.get(KEY_MOVIE_COMPANY_REGION_ID_PAGE);
+    let data;
     if (cached) {
         data = JSON.parse(cached);
         data.source = "cache";
@@ -257,7 +258,7 @@ router.get('/detail', async (req, res) => {
 router.get('/watch/providers', async (req, res) => {
     const qs = req.query;
     console.log(qs);
-    const id = qs.id;
+    let id = qs.id;
     const region = qs.region;
 
     if (availableRegions.includes(region)) {
@@ -277,7 +278,7 @@ router.get('/watch/providers', async (req, res) => {
                     api_key
                 }));
                 data = await response.json();
-                let id = data.id;
+                id = data.id;
                 results = data["results"][region];
                 if (results) {
                     body = results;
@@ -320,7 +321,7 @@ router.get('/credits', async (req, res) => {
                 api_key
             }));
             data = await response.json();
-            body.source = 'api';
+            data.source = 'api';
             client.setEx(KEY_MOVIE_CREDITS_REGION_ID, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
@@ -355,6 +356,7 @@ router.get('/similar', async function (req, res) {
                 language: 'ko-KR',
                 api_key
             }));
+            data = await response.json();
             data.source = 'api';
             client.setEx(KEY_MOVIE_SIMILAR_ID_PAGE, caching_time, JSON.stringify(data));
         } catch (error) {

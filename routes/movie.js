@@ -267,6 +267,7 @@ router.get('/watch/providers', async (req, res) => {
 
         let cached = await client.get(KEY_MOVIE_WATCH_PROVIDERS_REGION_ID);
         let data;
+        let results;
 
         if (cached) {
             data = JSON.parse(cached);
@@ -279,14 +280,13 @@ router.get('/watch/providers', async (req, res) => {
                 }));
                 data = await response.json();
                 id = data.id;
-                results = data["results"][region];
-                if (results) {
-                    body = results;
+                data = data["results"][region];
+                if (data) {
                     data.id = id;
                 } else {
-                    body = { id };
+                    data = { id };
                 }
-                body.source = 'api';
+                data.source = 'api';
                 client.setEx(KEY_MOVIE_WATCH_PROVIDERS_REGION_ID, caching_time, JSON.stringify(data));
             } catch (error) {
                 console.log(error);

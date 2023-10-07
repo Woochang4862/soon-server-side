@@ -108,19 +108,19 @@ router.get('/multi', searchCompanies, searchMovies, function (req, res) {
   const movies = req.movies;
 
   if (companies.total_results >= movies.total_results) {
-    res.sendStatus(200).json({ "companies": true, "results": { "movies": movies, "companies": companies } });
+    res.status(200).json({ "companies": true, "results": { "movies": movies, "companies": companies } });
   }
   else {
-    res.sendStatus(200).json({ "companies": false, "results": { "movies": movies, "companies": companies } });
+    res.status(200).json({ "companies": false, "results": { "movies": movies, "companies": companies } });
   }
 });
 
 router.get('/company', searchCompanies, function (req, res) {
-  res.sendStatus(200).json(req.companies);
+  res.status(200).json(req.companies);
 });
 
 router.get('/movie', searchMovies, function (req, res) {
-  res.sendStatus(200).json(req.movies);
+  res.status(200).json(req.movies);
 });
 
 export default router;

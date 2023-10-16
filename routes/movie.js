@@ -116,8 +116,7 @@ router.get('/company', async function (req, res) {
             }));
             data = await response.json();
             data.source = 'api';
-            client.setEx(KEY_MOVIE_COMPANY_REGION_ID_PAGE, caching_time, JSON.stringify(body));
-            res.json(body);
+            client.setEx(KEY_MOVIE_COMPANY_REGION_ID_PAGE, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
             return res.sendStatus(500);

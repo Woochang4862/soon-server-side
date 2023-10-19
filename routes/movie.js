@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import api_key from '../config/tmdb.js';
 import availableRegions from '../utils/availableRegions.js';
+import getWatchProviderLink from '../utils/get-watch-provider-link.js';
 
 dotenv.config();
 
@@ -285,6 +286,23 @@ router.get('/watch/providers', async (req, res) => {
                 } else {
                     data = { id };
                 }
+
+                let link = data.link;
+                let links = await getWatchProviderLink(link);
+                delete data.link;
+                
+                Object.keys(links).forEach((key, index)=>{
+                    let providers = links[key];
+                    data[key] = data[key].map((v, i)=>{
+                        providers.forEach((provider)=>{
+                            if (v.logo_path == provider.logo_path){
+                                return Object.assign(v,provider);
+                            }
+                        });
+                        
+                        return v
+                    });
+                });
                 data.source = 'api';
                 client.setEx(KEY_MOVIE_WATCH_PROVIDERS_REGION_ID, caching_time, JSON.stringify(data));
             } catch (error) {

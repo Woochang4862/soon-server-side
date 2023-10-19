@@ -368,7 +368,7 @@ router.get('/similar', async function (req, res) {
     } else {
         let response;
         try {
-            response = await fetch(url + '/movie/' + id + '/similar' + new URLSearchParams({
+            response = await fetch(url + '/movie/' + id + '/similar?' + new URLSearchParams({
                 page,
                 language: 'ko-KR',
                 api_key

@@ -1,8 +1,9 @@
-import axios from 'axios';
+import fetch from 'node-fetch';
 import { load } from 'cheerio';
 
 export default async function (url) {
-    let {data} = await axios.get(url);
+    let response = await fetch(url,{method:'GET',headers:{'Accept-Language':'ko'}});
+    let data = await response.text();
     let $ = load(data);
     let result = {};
     $('div.ott_provider').each((index,item)=>{ // Stream, Buy, Rent

@@ -41,6 +41,7 @@ cron.schedule('* * * * *', async function () {
     response = await connection.query("SELECT table_name FROM Information_schema.tables WHERE table_schema = '" + dbconfig.connection.database + "' AND table_name <> '" + dbconfig.company_alarm_table + "'");
     console.log("response: " + JSON.stringify(response)); // [[{"TABLE_NAME":"420"}],[...]]
     let [rows] = response;
+    console.log(rows);
     for (let { TABLE_NAME } of rows) { // 대소문자 중요 table_name (x)
       response = await connection.beginTransaction();
       console.log("response: " + JSON.stringify(response));
@@ -132,7 +133,7 @@ cron.schedule('* * * * *', async function () {
     response = await connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token'); // token 을 unique 하게 뽑아냄
     console.log("response: " + JSON.stringify(response));
 
-    for (let {toekn} of response[0]){
+    for (let {token} of response[0]){
       response = await fetch("https://iid.googleapis.com/iid/info/" + token+"?" + 
       new URLSearchParams({
         details:true

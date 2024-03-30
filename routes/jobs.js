@@ -32,7 +32,6 @@ Date.prototype.yyyymmdd = function () {
  */
 cron.schedule('* * * * *', async function () {
   let startTime = Date.now();
-  const connection = await mysql.createConnection(dbconfig.connection);
   let response;
   try {
     response = await connection.query("SELECT * FROM " + dbconfig.company_alarm_table);
@@ -127,7 +126,7 @@ cron.schedule('* * * * *', async function () {
  * 만약 유효하지 않은 토큰이라면 테이블에서 제외하는 과정 (각 제작사에서 모두 Unsubscribe & 테이블에서 삭제)
  */
 cron.schedule('* * * * *', async function () {
-  const connection = await mysql.createConnection(dbconfig.connection);
+  let startTime = Date.now();
   let response;
   try {
     response = await connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token'); // token 을 unique 하게 뽑아냄
@@ -144,13 +143,38 @@ cron.schedule('* * * * *', async function () {
         }
       });
       let result = await response.json();
-      console.log(result);
+      console.log("response: "+result);
+      if (result.error && result.error == "InvalidToken") {
+        /**
+         * company_alarm_table 에서 token 인 행에 대해서 company_id 가져오기
+         * company_id 에 대해서 
+         *  table 삭제
+         *  unsubscribe to topic
+         * company_alarm_table 에서 token 행 삭제
+         */
+        response = await connection.query('SELECT company_id FROM ' + dbconfig.connection.company_alarm_table + ' WHERE token="'+token+'"');
+        console.log("response: "+response);
+        
+        for (let {company_id} of response[0]) {
+          response = await connection.query("DROP TABLE IF EXISTS `" + company_id + "`");
+          console.log(response);
+
+          response = await admin.messaging().unsubscribeFromTopic(token, '/topics/' + company_id);
+          console.log('response: '+response);
+        }
+
+        response = await connection.query('DELETE FROM ' + dbconfig.company_alarm_table + ' WHERE token = ?',[token,]);
+        console.log("response: "+response);
+
+
+      }
     }
   } catch (error) {
     console.log(error);
     response = await connection.rollback();
     console.log("response: " + JSON.stringify(response));
   }
+  console.log(`Cleaning Invalid Row, Token, Table : Complete! (Excutation Time:${Date.now() - startTime}ms)`);
   // connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token', function (err, rows) {
   //   if (err) throw err;
   //   var i = 0;

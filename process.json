@@ -1,0 +1,9 @@
+{
+    "apps" : [{
+        "name"        : "cron-jobs",
+        "script"      : "./routes/jobs.js"
+    },{
+        "name"       : "api-server",
+        "script"     : "./bin/www.js"
+    }]
+}

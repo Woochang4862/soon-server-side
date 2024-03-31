@@ -11,7 +11,6 @@ admin.initializeApp({
   databaseURL: 'https://soon-79c2e.firebaseio.com'
 });
 //const fcm = new FCM(serverKey);
-const connection = mysql.createConnection(dbconfig.connection);
 
 const baseUrl = 'https://api.themoviedb.org/3';
 
@@ -32,6 +31,7 @@ Date.prototype.yyyymmdd = function () {
  */
 cron.schedule('* * * * *', async function () {
   let startTime = Date.now();
+  let connection = await mysql.createConnection(dbconfig.connection);
   let response;
   try {
     response = await connection.query("SELECT * FROM " + dbconfig.company_alarm_table);
@@ -127,6 +127,7 @@ cron.schedule('* * * * *', async function () {
  */
 cron.schedule('* * * * *', async function () {
   let startTime = Date.now();
+  let connection = await mysql.createConnection(dbconfig.connection);
   let response;
   try {
     response = await connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token'); // token 을 unique 하게 뽑아냄
@@ -152,7 +153,7 @@ cron.schedule('* * * * *', async function () {
          *  unsubscribe to topic
          * company_alarm_table 에서 token 행 삭제
          */
-        response = await connection.query('SELECT company_id FROM ' + dbconfig.connection.company_alarm_table + ' WHERE token="'+token+'"');
+        response = await connection.query('SELECT company_id FROM ' + dbconfig.company_alarm_table + ' WHERE token="'+token+'"');
         console.log("response: "+response);
         
         for (let {company_id} of response[0]) {

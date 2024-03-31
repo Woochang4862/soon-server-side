@@ -24,14 +24,20 @@ Date.prototype.yyyymmdd = function () {
   ].join('-');
 };
 
+cron.schedule('* * * * *', async function () {
+  let connection = await mysql.createConnection(dbconfig.connection);
+  await unsubscribeInvalidToken(connection);
+  await checkDifferenceOfCompanyTable(connection);
+  await connection.end()
+}).start();
+
 /**
  * 제작사 테이블 변경사항 체크
  * 현재 있는 제작사 테이블에 대해서
  *  테이블 내 제작사 id 와 api 서버 내 제작사 id 를 비교
  */
-cron.schedule('* * * * *', async function () {
+const checkDifferenceOfCompanyTable = async function (connection) {
   let startTime = Date.now();
-  let connection = await mysql.createConnection(dbconfig.connection);
   let response;
   try {
     response = await connection.query("SELECT * FROM " + dbconfig.company_alarm_table);
@@ -117,17 +123,15 @@ cron.schedule('* * * * *', async function () {
     console.log("response: " + JSON.stringify(response));
   }
   console.log(`Calculate Difference of Movie Tables : Complete! (Excutation Time:${Date.now() - startTime}ms)`);
-
-}).start();
+};
 
 /**
  * Invalid Token Unsubscribe 시키기
  * 저장된 토큰에 대해서 유효한 토큰인지 판단
  * 만약 유효하지 않은 토큰이라면 테이블에서 제외하는 과정 (각 제작사에서 모두 Unsubscribe & 테이블에서 삭제)
  */
-cron.schedule('* * * * *', async function () {
+const unsubscribeInvalidToken = async function (connection) {
   let startTime = Date.now();
-  let connection = await mysql.createConnection(dbconfig.connection);
   let response;
   try {
     response = await connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token'); // token 을 unique 하게 뽑아냄
@@ -176,86 +180,7 @@ cron.schedule('* * * * *', async function () {
     console.log("response: " + JSON.stringify(response));
   }
   console.log(`Cleaning Invalid Row, Token, Table : Complete! (Excutation Time:${Date.now() - startTime}ms)`);
-  // connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token', function (err, rows) {
-  //   if (err) throw err;
-  //   var i = 0;
-  //   async.whilst(
-  //     function () {
-  //       return i < rows.length;
-  //     },
-  //     function (next) {
-  //       const row = rows[i];
-  //       console.log(row.token);
-  //       var options = {
-  //         url: "https://iid.googleapis.com/iid/info/" + row.token,
-  //         headers: {
-  //           'Authorization': 'Key=' + serverKey
-  //         },
-  //         qs: {
-  //           details: true
-  //         }
-  //       };
-
-  //       request(options, function (err, response, body) {
-  //         var body = JSON.parse(body);
-  //         if (body.error && body.error == 'InvalidToken') {
-  //           // Invalid Token => Need to be Reset
-  //           connection.query('SELECT company_id FROM ' + dbconfig.company_alarm_table + ' WHERE token = ?', [row.token], function (err, rows) {
-  //             if (err) console.log('Error select with token:', err);
-  //             var j = 0;
-  //             async.whilst(
-  //               function () {
-  //                 return j < rows.length;
-  //               },
-  //               function (next) {
-  //                 var topic = rows[j].company_id;
-  //                 admin.messaging().unsubscribeFromTopic(row.token, '/topics/' + topic)
-  //                   .then(function (response) {
-  //                     var deleteSql = 'DELETE FROM ' + dbconfig.company_alarm_table + ' WHERE token = ? AND company_id = ?';
-  //                     connection.query(deleteSql, [row.token, topic], function (err, result) {
-  //                       if (err) console.log(err);;
-  //                       var sql = 'SELECT COUNT(*) AS membersCount FROM ' + dbconfig.company_alarm_table + ' WHERE company_id = ?'
-  //                       connection.query(sql, [topic], function (err, row) {
-  //                         if (err) console.log(err);;
-  //                         if (row[0].membersCount <= 0) {
-  //                           //DROP TABLE
-  //                           var dropSql = "DROP TABLE IF EXISTS `" + topic + "`"
-  //                           connection.query(dropSql, function (err, result) {
-  //                             if (err) console.log('', err);
-  //                             j++;
-  //                             return next();
-  //                           });
-  //                         } else {
-  //                           j++;
-  //                           return next();
-  //                         }
-  //                       });
-  //                     });
-  //                   })
-  //                   .catch(function (error) {
-  //                     console.log('Error unsubscribing from topic:', error);
-  //                   });
-  //               },
-  //               function (err) {
-  //                 if (err) console.log('', err);
-  //                 i++;
-  //                 next();
-  //               });
-  //           });
-  //         } else { // Valid Token
-  //           i++;
-  //           next();
-  //         }
-  //       });
-  //     },
-  //     function (err) {
-  //       //totally done!
-  //       if (err) console.log(err);
-  //       console.log('Totally Done!');
-  //     }
-  //   );
-  // });
-}).start();
+}
 
 /**
  * 만약 차이가 있을 시 1 이상의 값이 

@@ -171,7 +171,7 @@ router.post('/add/alarm/company', async function (req, res) {
 
     return res.sendStatus(500);
   }
-
+  await connection.end();
   res.sendStatus(200);
 });
 
@@ -225,7 +225,7 @@ router.post('/remove/alarm/company', async function (req, res) {
 
     return res.sendStatus(500);
   }
-
+  await connection.end();
   res.sendStatus(200);
 });
 
@@ -278,7 +278,7 @@ router.post('/reset', async function (req, res) {
         console.log("response: " + JSON.stringify(response));
       }
 
-      response = await connection.commit()
+      response = await connection.commit();
     } catch (error) {
       console.log(error);
       response = await connection.rollback();
@@ -286,10 +286,11 @@ router.post('/reset', async function (req, res) {
 
       response = await admin.messaging().subscribeToTopic(req.body.token, '/topics/' + req.body.company_id)
       console.log("response: " + JSON.stringify(response));
-
+      await connection.end();
       return res.sendStatus(500);
     }
   }
+  await connection.end();
 
   //여기서부터는 Firebase Message Topic 에 등록된 것이 all 밖에 없어야 함
   let url = "https://iid.googleapis.com/iid/info/" + req.body.token + "?" + new URLSearchParams({ details: true });
@@ -330,11 +331,12 @@ router.post('/fix', async function (req, res) {
   /*
   token 의 topics 유효성 검사 : all 있어야 됨
   alarm_table - topics topic으로 추가
-  topics - alarm_table topic에서 제거
+  topics - company_alarm_table에서 topic에서 제거
   */
   res.sendStatus(200);
 });
 
+// TODO : below
 // firebase function
 // check validation of token
 // get topics that user(token) subscribed

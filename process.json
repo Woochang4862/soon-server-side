@@ -1,9 +1,11 @@
 {
     "apps" : [{
-        "name"        : "cron-jobs",
-        "script"      : "./routes/jobs.js"
+        "name" : "cron-jobs",
+        "script" : "./routes/jobs.js"
     },{
-        "name"       : "api-server",
-        "script"     : "./bin/www.js"
+        "name" : "api-server",
+        "script" : "./bin/www.js",
+        "instances" : 0,
+        "exec_mode" : "cluster"
     }]
 }

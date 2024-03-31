@@ -12,6 +12,5 @@ RUN npm install
 RUN npm install -g pm2
 
 # 애플리케이션 실행
-CMD ["pm2", "start", "bin/www.js"]
-CMD ["pm2", "start", "routes/jobs.js"]
+CMD ["npm", "start"]
 

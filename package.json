@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "pm2-runtime start ./bin/www.js ./routes/jobs.js",
-    "restart": "pm2-runtime restart www jobs",
-    "stop": "pm2-runtime stop www jobs"
+    "start": "pm2-runtime start process.json",
+    "restart": "pm2-runtime restart process.json",
+    "stop": "pm2-runtime stop process.json"
   },
   "dependencies": {
     "async": "^3.2.4",

@@ -9,7 +9,6 @@ import searchRouter from './routes/search.js';
 import alarmRouter from './routes/alarm.js';
 import messageRouter from './routes/message.js';
 
-import bodyParser from "body-parser";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 

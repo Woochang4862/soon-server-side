@@ -1,21 +1,14 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import api_key from '../config/tmdb.js';
-import redis from 'redis';
+import {client} from '../utils/redis.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const url = 'https://api.themoviedb.org/3';
 const router = express.Router();
-const client = redis.createClient({
-  url: `redis://${process.env.REDIS_HOST}:6379`
-});
-await client.connect();
 const caching_time = 300;
-client.on('error', (err) => {
-  console.log("Error " + err);
-});
 
 var searchCompanies = async function (req, res, next) {
   const qs = req.query;
@@ -27,6 +20,12 @@ var searchCompanies = async function (req, res, next) {
   console.log("request query : " + query);
   console.log("request page : " + page);
   console.log("request region : " + region);
+
+  await client.connect();
+  client.on('error', async (err) => {
+      console.log("Error " + err);
+      await client.quit()
+  });
 
   const KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
 
@@ -52,10 +51,11 @@ var searchCompanies = async function (req, res, next) {
       client.setEx(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, caching_time, JSON.stringify(data));
     } catch (error) {
       console.log(error);
+      await client.quit();
       return res.sendStatus(500);
     }
   }
-
+  await client.quit();
   req.companies = data;
   next();
 };
@@ -70,6 +70,12 @@ var searchMovies = async function (req, res, next) {
   console.log("request query : " + query);
   console.log("request page : " + page);
   console.log("request region : " + region);
+
+  await client.connect();
+  client.on('error', async (err) => {
+      console.log("Error " + err);
+      await client.quit();
+  });
 
   const KEY_SEARCH_MOVIE_REGION_QUERY_PAGE = req.originalUrl;
 
@@ -95,10 +101,12 @@ var searchMovies = async function (req, res, next) {
       client.setEx(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, caching_time, JSON.stringify(data));
     } catch (error) {
       console.log(error);
+      await client.quit();
       return res.sendStatus(500);
     }
   }
 
+  await client.quit();
   req.movies = data;
   next();
 };

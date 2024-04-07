@@ -1,5 +1,5 @@
 import express from 'express';
-import redis from 'redis';
+import {client} from '../utils/redis.js';
 import api_key from '../config/tmdb.js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -7,15 +7,9 @@ import dotenv from 'dotenv';
 dotenv.config()
 
 const router = express.Router();
-const client = redis.createClient({
-  url:`redis://${process.env.REDIS_HOST}:6379`
-});
-await client.connect();
-const caching_time = 300;
-client.on('error', (err) => {
-  console.log("Error " + err);
-});
 const url = 'https://api.themoviedb.org/3';
+
+const caching_time = 300;
 
 Date.prototype.yyyymmdd = function () {
   var mm = this.getMonth() + 1;
@@ -31,6 +25,11 @@ router.get('/all', async function (req, res) {
   const KEY_GENRE_ALL = req.originalUrl;
   const region = req.query.region;
   console.log(KEY_GENRE_ALL);
+  await client.connect();
+  client.on('error', async (err) => {
+      console.log("Error " + err);
+      await client.quit();
+  });
   let cached = await client.get(KEY_GENRE_ALL);
   let data;
   if (cached) {
@@ -80,9 +79,11 @@ router.get('/all', async function (req, res) {
       await client.setEx(KEY_GENRE_ALL, caching_time, JSON.stringify(data));
     } catch (error) {
       console.log(error);
+      await client.quit();
       return res.sendStatus(500);
     }
   }
+  await client.quit();
   return res.status(200).json(data);
 });
 

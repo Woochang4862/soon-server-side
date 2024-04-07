@@ -1,23 +1,14 @@
 import express from 'express';
-import redis from 'redis';
+import {client} from '../utils/redis.js'
 import fetch from 'node-fetch';
-import dotenv from 'dotenv';
 import api_key from '../config/tmdb.js';
 import availableRegions from '../utils/availableRegions.js';
 import getWatchProviderLink from '../utils/get-watch-provider-link.js';
 
-dotenv.config();
-
 const url = 'https://api.themoviedb.org/3';
 const router = express.Router();
-const client = redis.createClient({
-    url: `redis://${process.env.REDIS_HOST}:6379`
-});
-await client.connect();
+
 const caching_time = 300;
-client.on('error', (err) => {
-    console.log("Error " + err);
-});
 
 Date.prototype.yyyymmdd = function () {
     var mm = this.getMonth() + 1;
@@ -50,6 +41,12 @@ router.get('/TMM', async function (req, res) {
     console.log("last date : " + lastDate);
     const region = qs.region;
     const page = qs.page;
+
+    await client.connect();
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit()
+    });
 
     const KEY_MOVIE_TMM_REGION_PAGE = req.originalUrl;
 
@@ -89,9 +86,11 @@ router.get('/TMM', async function (req, res) {
             await client.setEx(KEY_MOVIE_TMM_REGION_PAGE, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
+            await client.quit();
             return res.sendStatus(500);
         }
     }
+    await client.quit();
     return res.status(200).json(data);
 });
 
@@ -103,7 +102,12 @@ router.get('/company', async function (req, res) {
 
     const id = qs.id;
     const page = qs.page;
-    const region = qs.region;
+    
+    await client.connect();
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit()
+    });
 
     const KEY_MOVIE_COMPANY_REGION_ID_PAGE = req.originalUrl;
 
@@ -131,10 +135,11 @@ router.get('/company', async function (req, res) {
             client.setEx(KEY_MOVIE_COMPANY_REGION_ID_PAGE, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
+            await client.quit()
             return res.sendStatus(500);
         }
     }
-
+    await client.quit()
     return res.status(200).json(data);
 });
 
@@ -147,6 +152,13 @@ router.get('/genre', async function (req, res) {
     const id = qs.id;
     const page = qs.page;
     const region = qs.region;
+
+    await client.connect();
+    const caching_time = 300;
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit()
+    });
 
     const KEY_MOVIE_GENRE_REGION_ID_PAGE = req.originalUrl;
 
@@ -174,9 +186,11 @@ router.get('/genre', async function (req, res) {
             client.setEx(KEY_MOVIE_GENRE_REGION_ID_PAGE, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
+            await client.quit()
             return res.sendStatus(500);
         }
     }
+    await client.quit()
     return res.status(200).json(data);
 });
 
@@ -188,6 +202,12 @@ router.get('/date', async function (req, res) {
 
     const page = qs.page;
     const region = qs.region;
+
+    await client.connect();
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit()
+    });
 
     const KEY_MOVIE_DATE_REGION_DATE_PAGE = req.originalUrl;
 
@@ -216,10 +236,11 @@ router.get('/date', async function (req, res) {
             client.setEx(KEY_MOVIE_DATE_REGION_DATE_PAGE, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
+            await client.quit()
             return res.sendStatus(500);
         }
     }
-
+    await client.quit()
     return res.status(200).json(data);
 });
 
@@ -228,6 +249,12 @@ router.get('/detail', async (req, res) => {
     console.log(qs);
     const id = qs.id;
     const region = qs.region;
+
+    await client.connect();
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit()
+    });
 
     const KEY_MOVIE_DETAIL_REGION_ID = req.originalUrl;
 
@@ -259,18 +286,25 @@ router.get('/detail', async (req, res) => {
             }
         } catch (error) {
             console.log(error);
+            await client.quit();
             return res.sendStatus(500);
         }
     }
-
+    await client.quit();
     return res.status(200).json(data);
 });
 
 router.get('/watch/providers', async (req, res) => {
-    const qs = req.query;
+    let qs = req.query;
     console.log(qs);
     let id = qs.id;
-    const region = qs.region;
+    let region = qs.region;
+
+    await client.connect();
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit();
+    });
 
     if (availableRegions.includes(region)) {
 
@@ -318,12 +352,14 @@ router.get('/watch/providers', async (req, res) => {
                 client.setEx(KEY_MOVIE_WATCH_PROVIDERS_REGION_ID, caching_time, JSON.stringify(data));
             } catch (error) {
                 console.log(error);
+                await client.quit();
                 return res.sendStatus(500);
             }
         }
-
+        await client.quit()
         return res.status(200).json(data);
     } else {
+        await client.quit();
         return res.status(400).json({ message: "올바르지 못한 리전 코드입니다" }) //BAD REQUEST! : 올바르지 못한 리전 코드
     }
 });
@@ -333,6 +369,12 @@ router.get('/credits', async (req, res) => {
     console.log(qs);
     const id = qs.id;
     const region = qs.region;
+
+    await client.connect();
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit()
+    });
 
     const KEY_MOVIE_CREDITS_REGION_ID = req.originalUrl;
 
@@ -353,10 +395,11 @@ router.get('/credits', async (req, res) => {
             client.setEx(KEY_MOVIE_CREDITS_REGION_ID, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
+            await client.quit();
             return res.sendStatus(500);
         }
     }
-
+    await client.quit();
     return res.status(200).json(data);
 });
 
@@ -367,6 +410,12 @@ router.get('/similar', async function (req, res) {
     const id = qs.id;
     const page = qs.page;
     const region = qs.region;
+
+    await client.connect();
+    client.on('error', async (err) => {
+        console.log("Error " + err);
+        await client.quit()
+    });
 
     const KEY_MOVIE_SIMILAR_ID_PAGE = req.originalUrl;
 
@@ -389,10 +438,11 @@ router.get('/similar', async function (req, res) {
             client.setEx(KEY_MOVIE_SIMILAR_ID_PAGE, caching_time, JSON.stringify(data));
         } catch (error) {
             console.log(error);
+            await client.quit()
             return res.sendStatus(500);
         }
     }
-
+    await client.quit();
     return res.status(200).json(data);
 });
 

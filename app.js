@@ -42,11 +42,11 @@ const options = {
     },
     servers: [
       {
-        url: "http://34.229.27.130:3000/api/",
+        url: "http://34.229.27.130:3000",
       },
     ],
   },
-  apis: ["./routes/movie.js", "./routes/alarm.js", "./routes/genre.js", "./routes/search.js"],
+  apis: ["routes/movie.js", "routes/alarm.js", "routes/genre.js", "routes/search.js"],
 };
 
 const specs = swaggerJsdoc(options);

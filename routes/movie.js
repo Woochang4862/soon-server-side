@@ -29,6 +29,29 @@ Date.prototype.yyyymmdd = function () {
     ].join('-');
 };
 
+/**
+ * @openapi
+ * /TMM:
+ *     get:
+ *         description: Get a list of This Month Movies.
+ *             responses:
+ *                 200:
+ *                     description: Returns a list of this month movie.
+ *                 500:
+ *                     description: Fail to get a list from TMDB API.
+ *
+ */
+/**
+ * @openapi
+ * /TMM:
+ *   get:
+ *     description: Get a list of This Month Movies.
+ *     responses:
+ *       200:
+ *         description: Returns a list of this month movie.
+ *       500:
+ *         description: Fail to get a list from TMDB API.
+ */
 router.get('/TMM', async function (req, res) {
     const qs = req.query;
     console.log(qs);

@@ -1,5 +1,5 @@
 import express from 'express';
-import {client} from '../utils/redis.js';
+import { client } from '../utils/redis.js';
 import api_key from '../config/tmdb.js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -25,11 +25,9 @@ router.get('/all', async function (req, res) {
   const KEY_GENRE_ALL = req.originalUrl;
   const region = req.query.region;
   console.log(KEY_GENRE_ALL);
-  await client.connect();
-  client.on('error', async (err) => {
-      console.log("Error " + err);
-      await client.quit();
-  });
+  if (!client.isReady) {
+    await client.connect();
+  }
   let cached = await client.get(KEY_GENRE_ALL);
   let data;
   if (cached) {

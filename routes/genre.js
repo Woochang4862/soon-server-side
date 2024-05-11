@@ -1,5 +1,5 @@
 import express from 'express';
-import { client } from '../utils/redis.js';
+import client from '../utils/redis.js';
 import api_key from '../config/tmdb.js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';

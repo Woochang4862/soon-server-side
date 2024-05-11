@@ -135,7 +135,7 @@ var searchMovies = async function (req, res, next) {
   next();
 };
 
-router.get('/multi', searchCompanies, searchMovies, async function (req, res) {
+router.get('/multi', checkSearchType, searchCompanies, searchMovies, async function (req, res) {
   const companies = req.companies;
   const movies = req.movies;
 
@@ -163,7 +163,7 @@ router.get('/multi', searchCompanies, searchMovies, async function (req, res) {
   return res.status(200).json(data);
 });
 
-router.get('/company', searchCompanies, async function (req, res) {
+router.get('/company', checkSearchType, searchCompanies, async function (req, res) {
   let data = req.companies;
   if (data.source == 'api'){
     try{
@@ -182,7 +182,7 @@ router.get('/company', searchCompanies, async function (req, res) {
   return res.status(200).json(data);
 });
 
-router.get('/movie', searchMovies, async function (req, res) {
+router.get('/movie', checkSearchType, searchMovies, async function (req, res) {
   let data = req.movies;
   if (data.source == 'api'){
     try{

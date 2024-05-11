@@ -10,7 +10,6 @@ const url = 'https://api.themoviedb.org/3';
 const router = express.Router();
 const caching_time = 300;
 
-
 /**
  * 
  * 
@@ -22,11 +21,17 @@ var checkSearchType = async function (req, res, next) {
     }
     switch (req.path) {
       case req.baseUrl + "/multi":
-
+        req.searchType = "multi"
+        req.KEY_SEARCH_MULTI_MOVIE = req.originalUrl+".movie";
+        req.KEY_SEARCH_MULTI_COMPANY = req.originalUrl+".company";
         break;
       case req.baseUrl + "/movie":
+        req.searchType = "movie"
+        req.KEY_SEARCH_MOVIE = req.originalUrl;
         break;
       case req.baseUrl + "/company":
+        req.searchType = "company"
+        req.KEY_SEARCH_COMPANY = req.originalUrl;
         break;
     }
   } catch (error) {
@@ -47,14 +52,17 @@ var searchCompanies = async function (req, res, next) {
   console.log("request page : " + page);
   console.log("request region : " + region);
 
-  const KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
-
   let data;
   try {
     if (!client.isReady) {
       await client.connect();
     }
-    let cache = await client.get(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE);
+    let cache;
+    if (req.searchType == 'multi'){
+      cache = await client.get(req.KEY_SEARCH_MULTI_COMPANY);
+    } else {
+      cache = await client.get(req.KEY_SEARCH_COMPANY);
+    }
     if (cache) {
       data = JSON.parse(cache);
       data.source = 'cache';
@@ -69,7 +77,6 @@ var searchCompanies = async function (req, res, next) {
       }));
       data = await response.json();
       data.source = 'api';
-      client.setEx(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, caching_time, JSON.stringify(data));
     }
   } catch (error) {
     console.log(error);
@@ -97,7 +104,12 @@ var searchMovies = async function (req, res, next) {
     if (!client.isReady) {
       await client.connect();
     }
-    let cache = await client.get(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE);
+    let cache;
+    if (req.searchType == 'multi') {
+      cache = await client.get(req.KEY_SEARCH_MULTI_COMPANY);
+    } else {
+      cache = await client.get(req.KEY_SEARCH_MOVIE);
+    }
     if (cache) {
       data = JSON.parse(cache);
       data.source = 'cache';
@@ -112,7 +124,6 @@ var searchMovies = async function (req, res, next) {
       }));
       data = await response.json();
       data.source = 'api';
-      client.setEx(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, caching_time, JSON.stringify(data));
     }
   } catch (error) {
     console.log(error);
@@ -127,36 +138,66 @@ var searchMovies = async function (req, res, next) {
 router.get('/multi', searchCompanies, searchMovies, async function (req, res) {
   const companies = req.companies;
   const movies = req.movies;
-  const KEY_SEARCH_MULTI_REGION_QUERY_PAGE = req.originalUrl;
 
   let data;
-  try {
-    if (companies.total_results >= movies.total_results) {
-      data = { "companies": true, "results": { "movies": movies, "companies": companies } }
-    }
-    else {
-      data = { "companies": true, "results": { "movies": movies, "companies": companies } }
-    }
-  } catch (error) {
-    console.log("Redis Connect : " + error);
-    // await client.quit(); // redis 연결 실패 예외이므로 연결 안됨!
-    return res.status(500);
+  if (companies.total_results >= movies.total_results) {
+    data = { "companies": true, "results": { "movies": movies, "companies": companies } }
   }
-  client.setEx(KEY_SEARCH_MULTI_REGION_QUERY_PAGE, caching_time, data);
+  else {
+    data = { "companies": false, "results": { "movies": movies, "companies": companies } }
+  }
+  if (data.source == 'api') {
+    try{
+      if (!client.isReady) {
+        await client.connect();
+      }
+      const KEY_SEARCH_MULTI_REGION_QUERY_PAGE = req.originalUrl
+      client.setEx(KEY_SEARCH_MULTI_REGION_QUERY_PAGE, caching_time, data);
+      await client.quit();
+    } catch (error) {
+      console.log(error);
+      await client.quit();
+      return res.status(200).json(data);
+    }
+  }
   return res.status(200).json(data);
 });
 
-router.get('/company', searchCompanies, function (req, res) {
+router.get('/company', searchCompanies, async function (req, res) {
   let data = req.companies;
-  let KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
-  client.setEx(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, caching_time, data);
+  if (data.source == 'api'){
+    try{
+      if (!client.isReady) {
+        await client.connect();
+      }
+      let KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
+      client.setEx(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, caching_time, data);
+      await client.quit();
+    } catch (error) {
+      console.log(error);
+      await client.quit();
+      return res.status(200).json(data);
+    }
+  }
   return res.status(200).json(data);
 });
 
-router.get('/movie', searchMovies, function (req, res) {
+router.get('/movie', searchMovies, async function (req, res) {
   let data = req.movies;
-  let KEY_SEARCH_MOVIE_REGION_QUERY_PAGE = req.originalUrl;
-  client.setEx(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, caching_time, data);
+  if (data.source == 'api'){
+    try{
+      if (!client.isReady) {
+        await client.connect();
+      }
+      let KEY_SEARCH_MOVIE_REGION_QUERY_PAGE = req.originalUrl;
+      client.setEx(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, caching_time, data);
+      await client.quit();
+    } catch (error) {
+      console.log(error);
+      await client.quit();
+      return res.status(200).json(data);
+    }
+  }
   return res.status(200).json(data);
 });
 

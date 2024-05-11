@@ -144,7 +144,7 @@ router.get('/multi', checkSearchType, searchCompanies, searchMovies, async funct
         await client.connect();
       }
       const KEY_SEARCH_MULTI_REGION_QUERY_PAGE = req.originalUrl
-      client.setEx(KEY_SEARCH_MULTI_REGION_QUERY_PAGE, caching_time, data);
+      client.setEx(KEY_SEARCH_MULTI_REGION_QUERY_PAGE, caching_time, JSON.stringify(data));
       await client.quit();
     } catch (error) {
       console.log(error);
@@ -163,7 +163,7 @@ router.get('/company', checkSearchType, searchCompanies, async function (req, re
         await client.connect();
       }
       let KEY_SEARCH_COMPANY_REGION_QUERY_PAGE = req.originalUrl;
-      client.setEx(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, caching_time, data);
+      client.setEx(KEY_SEARCH_COMPANY_REGION_QUERY_PAGE, caching_time, JSON.stringify(data));
       await client.quit();
     } catch (error) {
       console.log(error);
@@ -182,7 +182,7 @@ router.get('/movie', checkSearchType, searchMovies, async function (req, res) {
         await client.connect();
       }
       let KEY_SEARCH_MOVIE_REGION_QUERY_PAGE = req.originalUrl;
-      client.setEx(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, caching_time, data);
+      client.setEx(KEY_SEARCH_MOVIE_REGION_QUERY_PAGE, caching_time, JSON.stringify(data));
       await client.quit();
     } catch (error) {
       console.log(error);

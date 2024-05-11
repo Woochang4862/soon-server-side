@@ -15,30 +15,22 @@ const caching_time = 300;
  * 
  */
 var checkSearchType = async function (req, res, next) {
-  try {
-    if (!client.isReady) {
-      await client.connect();
-    }
-    switch (req.path) {
-      case req.baseUrl + "/multi":
-        req.searchType = "multi"
-        req.KEY_SEARCH_MULTI_MOVIE = req.originalUrl+".movie";
-        req.KEY_SEARCH_MULTI_COMPANY = req.originalUrl+".company";
-        break;
-      case req.baseUrl + "/movie":
-        req.searchType = "movie"
-        req.KEY_SEARCH_MOVIE = req.originalUrl;
-        break;
-      case req.baseUrl + "/company":
-        req.searchType = "company"
-        req.KEY_SEARCH_COMPANY = req.originalUrl;
-        break;
-    }
-  } catch (error) {
-    console.log(error);
-    await client.quit();
-    return res.status(500);
+  switch (req.path) {
+    case req.baseUrl + "/multi":
+      req.searchType = "multi"
+      req.KEY_SEARCH_MULTI_MOVIE = req.originalUrl + ".movie";
+      req.KEY_SEARCH_MULTI_COMPANY = req.originalUrl + ".company";
+      break;
+    case req.baseUrl + "/movie":
+      req.searchType = "movie"
+      req.KEY_SEARCH_MOVIE = req.originalUrl;
+      break;
+    case req.baseUrl + "/company":
+      req.searchType = "company"
+      req.KEY_SEARCH_COMPANY = req.originalUrl;
+      break;
   }
+  next();
 }
 
 var searchCompanies = async function (req, res, next) {
@@ -58,7 +50,7 @@ var searchCompanies = async function (req, res, next) {
       await client.connect();
     }
     let cache;
-    if (req.searchType == 'multi'){
+    if (req.searchType == 'multi') {
       cache = await client.get(req.KEY_SEARCH_MULTI_COMPANY);
     } else {
       cache = await client.get(req.KEY_SEARCH_COMPANY);
@@ -147,7 +139,7 @@ router.get('/multi', checkSearchType, searchCompanies, searchMovies, async funct
     data = { "companies": false, "results": { "movies": movies, "companies": companies } }
   }
   if (data.source == 'api') {
-    try{
+    try {
       if (!client.isReady) {
         await client.connect();
       }
@@ -165,8 +157,8 @@ router.get('/multi', checkSearchType, searchCompanies, searchMovies, async funct
 
 router.get('/company', checkSearchType, searchCompanies, async function (req, res) {
   let data = req.companies;
-  if (data.source == 'api'){
-    try{
+  if (data.source == 'api') {
+    try {
       if (!client.isReady) {
         await client.connect();
       }
@@ -184,8 +176,8 @@ router.get('/company', checkSearchType, searchCompanies, async function (req, re
 
 router.get('/movie', checkSearchType, searchMovies, async function (req, res) {
   let data = req.movies;
-  if (data.source == 'api'){
-    try{
+  if (data.source == 'api') {
+    try {
       if (!client.isReady) {
         await client.connect();
       }

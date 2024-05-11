@@ -15,19 +15,17 @@ const caching_time = 300;
  * 
  */
 var checkSearchType = async function (req, res, next) {
-  console.log(req.path);
-  console.log(req.baseUrlh);
   switch (req.path) {
-    case req.baseUrl + "/multi":
+    case "/multi":
       req.searchType = "multi"
       req.KEY_SEARCH_MULTI_MOVIE = req.originalUrl + ".movie";
       req.KEY_SEARCH_MULTI_COMPANY = req.originalUrl + ".company";
       break;
-    case req.baseUrl + "/movie":
+    case "/movie":
       req.searchType = "movie"
       req.KEY_SEARCH_MOVIE = req.originalUrl;
       break;
-    case req.baseUrl + "/company":
+    case "/company":
       req.searchType = "company"
       req.KEY_SEARCH_COMPANY = req.originalUrl;
       break;

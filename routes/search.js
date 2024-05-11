@@ -15,6 +15,8 @@ const caching_time = 300;
  * 
  */
 var checkSearchType = async function (req, res, next) {
+  console.log(req.path);
+  console.log(req.baseUrlh);
   switch (req.path) {
     case req.baseUrl + "/multi":
       req.searchType = "multi"

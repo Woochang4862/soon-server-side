@@ -1,8 +1,29 @@
-const mysql = require('mysql');
-const dbconfig = require('../config/database');
-const connection = mysql.createConnection(dbconfig.connection);
+function getDiff(a1, a2) {
+    var _arrToDelete = [], arrToAdd = [];
 
-connection.query('USE ' + dbconfig.database);
+    for (var i = 0; i < a1.length; i++) {
+        _arrToDelete[a1[i]] = a1[i];
+    }
 
-var sql = "SELECT * FROM tmp WHERE movie_id not in (select movie_id from `420`);"
-connection.query(sql)
+    for (var i = 0; i < a2.length; i++) {
+        if (_arrToDelete[a2[i]] != undefined) {
+            delete _arrToDelete[a2[i]];
+        } else {
+            arrToAdd.push(a2[i]);
+        }
+    }
+
+    var arrToDelete = [];
+    for (var id of _arrToDelete) {
+        if (id)
+            arrToDelete.push(id);
+    }
+
+    return { arrToDelete, arrToAdd };
+}
+
+var array_from_api = [...Array(10000000).keys()];
+var array_from_table = [...Array(0).keys()];
+const diff = getDiff(array_from_table, array_from_api)
+//console.log(diff);
+console.log(diff.arrToDelete.length, diff.arrToAdd.length);

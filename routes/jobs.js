@@ -87,7 +87,7 @@ const checkDifferenceOfCompanyTable = async function (connection) {
         return e.movie_id
       });
       const diff = getDiff(movie_id_array_from_table, movie_id_array_from_api)
-      if (diff.arrToAdd) {
+      if (diff.arrToAdd.length != 0) {
         response = await fetch(baseUrl + "/company/" + TABLE_NAME+"?" + new URLSearchParams({
           api_key
         }));
@@ -113,7 +113,7 @@ const checkDifferenceOfCompanyTable = async function (connection) {
         response = await connection.query(`INSERT INTO \`${TABLE_NAME}\` (movie_id) VALUES ?`, [arrToAdd]);
         console.log("response of add differences : " + JSON.stringify(response));   
       }
-      if (diff.arrToDelete) {
+      if (diff.arrToDelete.length != 0) {
         const arrToDelete = diff.arrToDelete.map(function (e) {
           return [e];
         });

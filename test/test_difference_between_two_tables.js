@@ -25,5 +25,5 @@ function getDiff(a1, a2) {
 var array_from_api = [...Array(10000000).keys()];
 var array_from_table = [...Array(0).keys()];
 const diff = getDiff(array_from_table, array_from_api)
-//console.log(diff);
+console.log(Boolean(diff.arrToDelete));
 console.log(diff.arrToDelete.length, diff.arrToAdd.length);

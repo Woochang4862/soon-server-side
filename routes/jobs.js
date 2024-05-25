@@ -28,6 +28,7 @@ cron.schedule('* * * * *', async function () {
   let connection = await mysql.createConnection(dbconfig.connection);
   await unsubscribeInvalidToken(connection);
   await checkDifferenceOfCompanyTable(connection);
+  // TODO: 특정 company_id 가 company alarm table에 있는데 `company_id`테이블이 없을때 만들어 준다
   await connection.end()
 }).start();
 

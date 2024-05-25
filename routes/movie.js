@@ -67,7 +67,6 @@ router.get('/TMM', async function (req, res) {
                 api_key
             }));
             data = await response.json();
-            console.log(data);
             data["source"] = 'api';
             let results = data["results"];
             data["results"] = [];

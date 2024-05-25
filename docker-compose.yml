@@ -8,11 +8,21 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - ./data/mysql:/var/lib/mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "150m"
+        max-file: "1"
 
   redis:
     image: redis:latest
     volumes:
       - ./data/redis:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "150m"
+        max-file: "1"
 
   node-app:
     build: .
@@ -26,4 +36,9 @@ services:
       MYSQL_HOST: mysql
     ports:
       - "3000:3000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "600m"
+        max-file: "1"
 

@@ -8,6 +8,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - ./data/mysql:/var/lib/mysql
+    # TODO: bin/www.js > creat_db.js 에서 connection error 발생 : healthcheck 로 해결해보기
     logging:
       driver: "json-file"
       options:

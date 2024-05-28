@@ -142,7 +142,7 @@ const unsubscribeInvalidToken = async function (connection) {
   let response;
   try {
     response = await connection.query('SELECT token FROM ' + dbconfig.company_alarm_table + ' GROUP BY token'); // token 을 unique 하게 뽑아냄
-    console.log("response: " + JSON.stringify(response[0]));
+    console.log("response of selecting all token : " + JSON.stringify(response[0]));
 
     for (let {token} of response[0]){
       response = await fetch("https://iid.googleapis.com/iid/info/" + token+"?" + 
@@ -155,7 +155,7 @@ const unsubscribeInvalidToken = async function (connection) {
         }
       });
       let result = await response.json();
-      console.log("response: "+result);
+      console.log("response of requesting to check if token is vaild : "+JSON.stringify(result));
       if (result.error && result.error == "InvalidToken") {
         /**
          * company_alarm_table 에서 token 인 행에 대해서 company_id 가져오기
@@ -172,11 +172,11 @@ const unsubscribeInvalidToken = async function (connection) {
           console.log(response);
 
           response = await admin.messaging().unsubscribeFromTopic(token, '/topics/' + company_id);
-          console.log('response: '+response);
+          console.log('response of unsubscribing topics that invalid token subscribed : '+response);
         }
 
         response = await connection.query('DELETE FROM ' + dbconfig.company_alarm_table + ' WHERE token = ?',[token,]);
-        console.log("response: "+response);
+        console.log("response of deleting invalid rows : "+response);
 
 
       }

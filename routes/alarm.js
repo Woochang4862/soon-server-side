@@ -214,7 +214,7 @@ router.post('/remove/alarm/company', async function (req, res) {
     }
 
     connection.commit();
-  } catch (error) {
+  } catch (error) { // TODO : delete from company_alarm_table where token and company_id statusCode 403
     console.log(error);
 
     response = await connection.rollback();

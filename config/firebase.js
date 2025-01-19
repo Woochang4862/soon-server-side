@@ -2,8 +2,8 @@ import { config } from 'dotenv';
 config();
 
 export default function getAccessToken() {
-    return new Promise(function (resolve, reject) {
-        const key = require('../public/service-account.json');
+    return new Promise(async function (resolve, reject) {        
+        const key = await import('../public/service-account.json', { assert: { type: 'json' } });
         const jwtClient = new google.auth.JWT(
             key.client_email,
             null,

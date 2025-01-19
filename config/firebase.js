@@ -1,5 +1,8 @@
 import { config } from 'dotenv';
+import { google } from 'googleapis';
 config();
+
+const SCOPES = ['https://www.googleapis.com/auth/firebase.messaging'];
 
 export default function getAccessToken() {
     return new Promise(async function (resolve, reject) {        

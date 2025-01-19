@@ -12,7 +12,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "150m"
+        max-size: "15m"
         max-file: "1"
 
   redis:
@@ -22,7 +22,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "150m"
+        max-size: "15m"
         max-file: "1"
 
   node-app:
@@ -40,6 +40,6 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "600m"
+        max-size: "60m"
         max-file: "1"
 

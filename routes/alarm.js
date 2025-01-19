@@ -1,7 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import api_key from '../config/tmdb.js';
-import serverKey from '../config/firebase.js';
+import getAccessToken from '../config/firebase.js';
 import serviceAccount from '../public/soon-79c2e-firebase-adminsdk-h7o9r-dc2b66a1c8.json' assert {type: 'json'};
 import admin from 'firebase-admin';
 import mysql from 'mysql2/promise';
@@ -29,9 +29,10 @@ router.get('/check/:token', async function (req, res) {
   let response;
   let data;
   try {
+    const accessToken = await getAccessToken();
     response = await fetch(url, {
       headers: {
-        'Authorization': 'Key=' + serverKey
+        'Authorization': 'Bearer ' + accessToken
       }
     });
     data = await response.json();
@@ -59,9 +60,10 @@ router.get('/check/:token/subscribe/:topic', async function (req, res) {
   let response;
   let data;
   try {
+    const accessToken = await getAccessToken();
     response = await fetch(url, {
       headers: {
-        'Authorization': 'Key=' + serverKey
+        'Authorization': 'Bearer ' + accessToken
       }
     });
     data = await response.json();

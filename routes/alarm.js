@@ -298,9 +298,10 @@ router.post('/reset', async function (req, res) {
   let url = "https://iid.googleapis.com/iid/info/" + req.body.token + "?" + new URLSearchParams({ details: true });
   let data;
   try {
+    const accessToken = await getAccessToken();
     response = await fetch(url, {
       headers: {
-        'Authorization': 'Key=' + serverKey
+        'Authorization': 'Bearer ' + accessToken
       }
     });
     data = await response.json();

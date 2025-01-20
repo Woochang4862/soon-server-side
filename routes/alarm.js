@@ -1,7 +1,6 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import api_key from '../config/tmdb.js';
-import getAccessToken from '../config/firebase.js';
 import serviceAccount from '../public/soon-79c2e-firebase-adminsdk-h7o9r-dc2b66a1c8.json' assert {type: 'json'};
 import admin from 'firebase-admin';
 import mysql from 'mysql2/promise';
@@ -30,14 +29,12 @@ router.get('/check/:token', async function (req, res) {
   let data;
   try {
     const {access_token} = await admin.credential.cert(serviceAccount).getAccessToken();
-    console.log(access_token);
     response = await fetch(url, {
       headers: {
         'Authorization': 'Bearer ' + access_token,
         'access_token_auth': true,
       }
     });
-    console.log(response.headers);
     data = await response.json();
     console.log(JSON.stringify(data));
     if (data.error == "InvalidToken") { // {"error":"InvalidToken"}
@@ -63,10 +60,11 @@ router.get('/check/:token/subscribe/:topic', async function (req, res) {
   let response;
   let data;
   try {
-    const accessToken = await getAccessToken();
+    const {access_token} = await admin.credential.cert(serviceAccount).getAccessToken();
     response = await fetch(url, {
       headers: {
-        'Authorization': 'Bearer ' + accessToken
+        'Authorization': 'Bearer ' + access_token,
+        'access_token_auth': true,
       }
     });
     data = await response.json();
@@ -301,10 +299,11 @@ router.post('/reset', async function (req, res) {
   let url = "https://iid.googleapis.com/iid/info/" + req.body.token + "?" + new URLSearchParams({ details: true });
   let data;
   try {
-    const accessToken = await getAccessToken();
+    const {access_token} = await admin.credential.cert(serviceAccount).getAccessToken();
     response = await fetch(url, {
       headers: {
-        'Authorization': 'Bearer ' + accessToken
+        'Authorization': 'Bearer ' + access_token,
+        'access_token_auth': true,
       }
     });
     data = await response.json();

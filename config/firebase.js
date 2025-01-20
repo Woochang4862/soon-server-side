@@ -7,6 +7,7 @@ const SCOPES = ['https://www.googleapis.com/auth/firebase.messaging'];
 export default function getAccessToken() {
     return new Promise(async function (resolve, reject) {        
         const key = await import('../public/soon-79c2e-firebase-adminsdk-h7o9r-dc2b66a1c8.json', { assert: { type: 'json' } });
+        console.log(key);
         const jwtClient = new google.auth.JWT(
             key.client_email,
             null,

@@ -29,11 +29,11 @@ router.get('/check/:token', async function (req, res) {
   let response;
   let data;
   try {
-    const {accessToken} = await admin.credential.cert(serviceAccount).getAccessToken();
-    console.log(accessToken);
+    const {access_token} = await admin.credential.cert(serviceAccount).getAccessToken();
+    console.log(access_token);
     response = await fetch(url, {
       headers: {
-        'Authorization': 'Bearer ' + accessToken
+        'Authorization': 'Bearer ' + access_token
       }
     });
     data = await response.json();

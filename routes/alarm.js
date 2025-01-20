@@ -33,9 +33,11 @@ router.get('/check/:token', async function (req, res) {
     console.log(access_token);
     response = await fetch(url, {
       headers: {
-        'Authorization': 'Bearer ' + access_token
+        'Authorization': 'Bearer ' + access_token,
+        'access_token_auth': true,
       }
     });
+    console.log(response.headers);
     data = await response.json();
     console.log(JSON.stringify(data));
     if (data.error == "InvalidToken") { // {"error":"InvalidToken"}

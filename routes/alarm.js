@@ -29,7 +29,8 @@ router.get('/check/:token', async function (req, res) {
   let response;
   let data;
   try {
-    const accessToken = await getAccessToken();
+    const accessToken = await admin.credential.applicationDefault().getAccessToken();
+    console.log(accessToken);
     response = await fetch(url, {
       headers: {
         'Authorization': 'Bearer ' + accessToken

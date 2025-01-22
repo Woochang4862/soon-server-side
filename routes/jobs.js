@@ -154,7 +154,7 @@ const unsubscribeInvalidToken = async function (connection) {
       });      
       let result = await response.json();
       console.log("response of requesting to check if token is vaild : " + JSON.stringify(result));
-      if (result.error && result.error == "InvalidToken") {
+      if (result.error && (result.error == "InvalidToken" || result.error == "The registration is not found.")) {
         /**
          * company_alarm_table 에서 token 인 행에 대해서 company_id 가져오기
          * company_id 에 대해서 
